@@ -38,6 +38,14 @@ typedef struct
 	GPIO_TypeDef *GPIOx;
 	uint32_t PortValue;	
 } t_do;
+
+typedef enum
+{
+	EV_READY,
+	EV_ERROR,
+	EV_WARNING,
+	EV_NONE
+} t_ev_status;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -55,6 +63,8 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+t_ev_status EV_STATUS = EV_NONE;
+
 t_do DoLedStatus;
 t_do DoV_S2_Out;
 /* USER CODE END PV */
@@ -109,6 +119,48 @@ bool DO_GetState(t_di *dout)
 {
 	return ( 0 != LL_GPIO_IsInputPinSet(dout->GPIOx, dout->PortValue));
 }
+void LedStatusSwitch(bool set)
+{
+	DO_Switch(&DoLedStatus, set);
+}
+void VS2OutSwitch(bool set)
+{
+	DO_Switch(&DoV_S2_Out, set);
+}
+void LedStatusHandler(void)
+{
+	#define DEFAULT_DELAY    1000u
+	static uint32_t prev_time_ms = 0;
+	uint16_t period = DEFAULT_DELAY;
+	uint16_t delay = DEFAULT_DELAY>>1;
+	uint32_t time_delta = HAL_GetTick() - prev_time_ms;
+	
+	switch((int)EV_STATUS)
+	{
+		case EV_READY:
+			break;
+		case EV_ERROR:
+			break;
+		case EV_WARNING:
+			break;
+		case EV_NONE:
+			delay = 5;
+			break;
+		default:
+			break;
+	}
+	
+	if( time_delta > period)
+	{
+		prev_time_ms = HAL_GetTick();
+		LedStatusSwitch(true);
+	}
+	else if( time_delta > delay)
+	{
+		LedStatusSwitch(false);
+	}
+
+}
 // ---------------------------------------------------------------------------
 /* USER CODE END 0 */
 
@@ -155,11 +207,13 @@ int main(void)
 	DoV_S2_Out.PortValue = V_S2_OUT_Pin;
 	
 	SendMessage((uint8_t*)uart_str, 18);
+	EV_STATUS = EV_NONE;
 	
   while (1)
   {
-		HAL_Delay(500);
-		DO_Toggle(&DoLedStatus);
+//		HAL_Delay(500);
+//		DO_Toggle(&DoLedStatus);
+		LedStatusHandler();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
