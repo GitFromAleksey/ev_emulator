@@ -27,7 +27,17 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct
+{
+	GPIO_TypeDef *GPIOx;
+	uint32_t PortValue;
+} t_di;
 
+typedef struct
+{
+	GPIO_TypeDef *GPIOx;
+	uint32_t PortValue;	
+} t_do;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -44,17 +54,15 @@ ADC_HandleTypeDef hadc1;
 
 UART_HandleTypeDef huart3;
 
-PCD_HandleTypeDef hpcd_USB_FS;
-
 /* USER CODE BEGIN PV */
-
+t_do DoLedStatus;
+t_do DoV_S2_Out;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
-static void MX_USB_PCD_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -67,6 +75,7 @@ void SendMessage(uint8_t *msg, uint16_t len)
 {
 	HAL_UART_Transmit(&huart3, msg, len,100);
 }
+
 // ---------------------------------------------------------------------------
 volatile uint16_t adc0_in = 0;
 volatile uint16_t adc1_in = 0;
@@ -81,14 +90,24 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	}
 }
 // ---------------------------------------------------------------------------
-void DO_Switch(GPIO_TypeDef *GPIOx, uint32_t PinMask, bool pin_state)
+void DO_Switch(t_do *dout, bool set)
 {
-	LL_GPIO_ResetOutputPin(GPIOx, PinMask);
-	LL_GPIO_SetOutputPin(GPIOx, PinMask);
+	if(set) 
+		LL_GPIO_ResetOutputPin(dout->GPIOx, dout->PortValue);
+	else
+		LL_GPIO_SetOutputPin(dout->GPIOx, dout->PortValue);
 }
-void DO_Toggle(GPIO_TypeDef *GPIOx, uint32_t PinMask)
+void DO_Toggle(t_do *dout)
 {
-	LL_GPIO_TogglePin(GPIOx, PinMask);
+	LL_GPIO_TogglePin(dout->GPIOx, dout->PortValue);
+}
+bool DI_GetState(t_di *din)
+{
+	return ( 0 != LL_GPIO_IsInputPinSet(din->GPIOx, din->PortValue));
+}
+bool DO_GetState(t_di *dout)
+{
+	return ( 0 != LL_GPIO_IsInputPinSet(dout->GPIOx, dout->PortValue));
 }
 // ---------------------------------------------------------------------------
 /* USER CODE END 0 */
@@ -122,7 +141,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
-  MX_USB_PCD_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 	HAL_ADC_Start_IT(&hadc1);
@@ -130,12 +148,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	DoLedStatus.GPIOx = LED_STATUS_GPIO_Port;
+	DoLedStatus.PortValue = LED_STATUS_Pin;
+	
+	DoV_S2_Out.GPIOx = V_S2_OUT_GPIO_Port;
+	DoV_S2_Out.PortValue = V_S2_OUT_Pin;
+	
 	SendMessage((uint8_t*)uart_str, 18);
 	
   while (1)
   {
 		HAL_Delay(500);
-		DO_Toggle(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+		DO_Toggle(&DoLedStatus);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -186,7 +210,6 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSRC_PCLK2_DIV_8);
-  LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_PLL_DIV_1_5);
 }
 
 /**
@@ -268,37 +291,6 @@ static void MX_USART3_UART_Init(void)
 }
 
 /**
-  * @brief USB Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USB_PCD_Init(void)
-{
-
-  /* USER CODE BEGIN USB_Init 0 */
-
-  /* USER CODE END USB_Init 0 */
-
-  /* USER CODE BEGIN USB_Init 1 */
-
-  /* USER CODE END USB_Init 1 */
-  hpcd_USB_FS.Instance = USB;
-  hpcd_USB_FS.Init.dev_endpoints = 8;
-  hpcd_USB_FS.Init.speed = PCD_SPEED_FULL;
-  hpcd_USB_FS.Init.low_power_enable = DISABLE;
-  hpcd_USB_FS.Init.lpm_enable = DISABLE;
-  hpcd_USB_FS.Init.battery_charging_enable = DISABLE;
-  if (HAL_PCD_Init(&hpcd_USB_FS) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USB_Init 2 */
-
-  /* USER CODE END USB_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -317,11 +309,21 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
   /**/
+  LL_GPIO_ResetOutputPin(V_S2_OUT_GPIO_Port, V_S2_OUT_Pin);
+
+  /**/
   GPIO_InitStruct.Pin = LED_STATUS_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   LL_GPIO_Init(LED_STATUS_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = V_S2_OUT_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  LL_GPIO_Init(V_S2_OUT_GPIO_Port, &GPIO_InitStruct);
 
 }
 
