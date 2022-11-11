@@ -91,8 +91,21 @@ volatile uint16_t adc0_in = 0;
 volatile uint16_t adc0_voltage = 0;
 volatile uint16_t adc1_in = 0;
 
+#define FILTR_DEPTH    4u
+
+
+uint16_t AdcFiltr(uint16_t data)
+{
+	static uint32_t accum = 0;
+	
+	accum -= accum>>FILTR_DEPTH;
+	accum += data;
+	
+	return (uint16_t)(accum>>FILTR_DEPTH);
+}
+
 #define ADC_RESOLUTION    4095
-#define MAX_INPUT_VOLTAGE (3.33f) * 1000
+#define MAX_INPUT_VOLTAGE (3.3f) * 1000
 #define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
 #define COEF_FP (uint32_t)(COEF * 0xFFFF)
 
@@ -103,7 +116,7 @@ uint16_t AdcToVoltageCalc(uint16_t adc_data)
 
 	temp = COEF_FP * temp;
 	temp = temp>>16;
-	result = temp+47;
+	result = temp;
 	
 	return result;
 }
@@ -113,6 +126,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
 	{
 		adc0_in = HAL_ADC_GetValue(hadc);
+		adc0_in = AdcFiltr(adc0_in);
 		adc0_voltage = AdcToVoltageCalc(adc0_in);
 ////		HAL_ADC_Start_IT(hadc);
 		
@@ -163,7 +177,7 @@ void LedStatusHandler(void)
 		case EV_WARNING:
 			break;
 		case EV_NONE:
-			delay = 5;
+//			delay = 500;
 			break;
 		default:
 			break;
