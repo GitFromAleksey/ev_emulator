@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -81,6 +81,16 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	}
 }
 // ---------------------------------------------------------------------------
+void DO_Switch(GPIO_TypeDef *GPIOx, uint32_t PinMask, bool pin_state)
+{
+	LL_GPIO_ResetOutputPin(GPIOx, PinMask);
+	LL_GPIO_SetOutputPin(GPIOx, PinMask);
+}
+void DO_Toggle(GPIO_TypeDef *GPIOx, uint32_t PinMask)
+{
+	LL_GPIO_TogglePin(GPIOx, PinMask);
+}
+// ---------------------------------------------------------------------------
 /* USER CODE END 0 */
 
 /**
@@ -124,8 +134,8 @@ int main(void)
 	
   while (1)
   {
-		HAL_Delay(1000);
-		
+		HAL_Delay(500);
+		DO_Toggle(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -175,7 +185,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSRC_PCLK2_DIV_6);
+  LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSRC_PCLK2_DIV_8);
   LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_PLL_DIV_1_5);
 }
 
@@ -295,11 +305,23 @@ static void MX_USB_PCD_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOC);
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOD);
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
+
+  /**/
+  LL_GPIO_ResetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+
+  /**/
+  GPIO_InitStruct.Pin = LED_STATUS_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  LL_GPIO_Init(LED_STATUS_GPIO_Port, &GPIO_InitStruct);
 
 }
 
