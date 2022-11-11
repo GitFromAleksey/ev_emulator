@@ -88,13 +88,32 @@ void SendMessage(uint8_t *msg, uint16_t len)
 
 // ---------------------------------------------------------------------------
 volatile uint16_t adc0_in = 0;
+volatile uint16_t adc0_voltage = 0;
 volatile uint16_t adc1_in = 0;
+
+#define ADC_RESOLUTION    4095
+#define MAX_INPUT_VOLTAGE (3.33f) * 1000
+#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
+#define COEF_FP (uint32_t)(COEF * 0xFFFF)
+
+uint16_t AdcToVoltageCalc(uint16_t adc_data)
+{
+	uint16_t result = 0;
+	uint32_t temp = adc_data;
+
+	temp = COEF_FP * temp;
+	temp = temp>>16;
+	result = temp+47;
+	
+	return result;
+}
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
 	{
 		adc0_in = HAL_ADC_GetValue(hadc);
+		adc0_voltage = AdcToVoltageCalc(adc0_in);
 ////		HAL_ADC_Start_IT(hadc);
 		
 	}
