@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "EventRecorder.h"
+#include "EvseLogger.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -144,6 +146,7 @@ void LedStatusHandler(void)
 	{
 		prev_time_ms = HAL_GetTick();
 		LedStatusSwitch(true);
+		LOG_DEBUG("main.cpp","Led toggle"); 
 	}
 	else if( time_delta > delay)
 	{
@@ -222,6 +225,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 		adc_run_flag = false;
 	}
 }
+bool AdcConversionComplete(void)
+{
+	return !adc_run_flag;
+}
 // ---------------------------------------------------------------------------
 /* USER CODE END 0 */
 
@@ -248,7 +255,9 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+	EventRecorderInitialize(EventRecordAll, 1);
+	LOG_ENABLE(true);
+	LOG_ADD_TIME_STAMP_GETTER(HAL_GetTick);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
