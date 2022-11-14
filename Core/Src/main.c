@@ -86,52 +86,7 @@ void SendMessage(uint8_t *msg, uint16_t len)
 	HAL_UART_Transmit(&huart3, msg, len,100);
 }
 
-// ---------------------------------------------------------------------------
-volatile uint16_t adc0_in = 0;
-volatile uint16_t adc0_voltage = 0;
-volatile uint16_t adc1_in = 0;
 
-#define FILTR_DEPTH    4u
-
-
-uint16_t AdcFiltr(uint16_t data)
-{
-	static uint32_t accum = 0;
-	
-	accum -= accum>>FILTR_DEPTH;
-	accum += data;
-	
-	return (uint16_t)(accum>>FILTR_DEPTH);
-}
-
-#define ADC_RESOLUTION    4095
-#define MAX_INPUT_VOLTAGE (3.3f) * 1000
-#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
-#define COEF_FP (uint32_t)(COEF * 0xFFFF)
-
-uint16_t AdcToVoltageCalc(uint16_t adc_data)
-{
-	uint16_t result = 0;
-	uint32_t temp = adc_data;
-
-	temp = COEF_FP * temp;
-	temp = temp>>16;
-	result = temp;
-	
-	return result;
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
-	{
-		adc0_in = HAL_ADC_GetValue(hadc);
-		adc0_in = AdcFiltr(adc0_in);
-		adc0_voltage = AdcToVoltageCalc(adc0_in);
-////		HAL_ADC_Start_IT(hadc);
-		
-	}
-}
 // ---------------------------------------------------------------------------
 void DO_Switch(t_do *dout, bool set)
 {
@@ -193,6 +148,53 @@ void LedStatusHandler(void)
 		LedStatusSwitch(false);
 	}
 
+}
+// ---------------------------------------------------------------------------
+volatile uint16_t adc0_in = 0;
+volatile uint16_t adc0_voltage = 0;
+volatile uint16_t adc1_in = 0;
+
+#define FILTR_DEPTH    4u
+
+
+uint16_t AdcFiltr(uint16_t data)
+{
+	static uint32_t accum = 0;
+	
+	accum -= accum>>FILTR_DEPTH;
+	accum += data;
+	
+	return (uint16_t)(accum>>FILTR_DEPTH);
+}
+
+#define ADC_RESOLUTION    4095
+#define MAX_INPUT_VOLTAGE (3.3f) * 1000
+#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
+#define COEF_FP (uint32_t)(COEF * 0xFFFF)
+
+uint16_t AdcToVoltageCalc(uint16_t adc_data)
+{
+	uint16_t result = 0;
+	uint32_t temp = adc_data;
+
+	temp = COEF_FP * temp;
+	temp = temp>>16;
+	result = temp;
+	
+	return result;
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
+	{
+		adc0_in = HAL_ADC_GetValue(hadc);
+		adc0_in = AdcFiltr(adc0_in);
+		adc0_voltage = AdcToVoltageCalc(adc0_in);
+////		HAL_ADC_Start_IT(hadc);
+		HAL_ADC_Start_IT(&hadc1);
+		DO_Toggle(&DoV_S2_Out);
+	}
 }
 // ---------------------------------------------------------------------------
 /* USER CODE END 0 */
@@ -320,7 +322,7 @@ static void MX_ADC1_Init(void)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;

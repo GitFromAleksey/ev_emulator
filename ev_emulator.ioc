@@ -1,6 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_0
-ADC1.ContinuousConvMode=ENABLE
+ADC1.ContinuousConvMode=DISABLE
 ADC1.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,NbrOfConversionFlag,ContinuousConvMode,NbrOfConversion,master
 ADC1.NbrOfConversion=1
 ADC1.NbrOfConversionFlag=1
@@ -97,7 +97,7 @@ ProjectManager.StackSize=0x400
 ProjectManager.TargetToolchain=MDK-ARM V5.32
 ProjectManager.ToolChainLocation=
 ProjectManager.UnderRoot=false
-ProjectManager.functionlistsort=1-MX_GPIO_Init-GPIO-false-LL-true,2-SystemClock_Config-RCC-false-LL-false,3-MX_USART3_UART_Init-USART3-false-HAL-true,4-MX_USB_PCD_Init-USB-false-HAL-true,5-MX_ADC1_Init-ADC1-false-HAL-true
+ProjectManager.functionlistsort=1-MX_GPIO_Init-GPIO-false-LL-true,2-SystemClock_Config-RCC-false-LL-false,3-MX_USART3_UART_Init-USART3-false-HAL-true,4-MX_ADC1_Init-ADC1-false-HAL-true
 RCC.ADCFreqValue=9000000
 RCC.ADCPresc=RCC_ADCPCLK2_DIV8
 RCC.AHBFreq_Value=72000000
