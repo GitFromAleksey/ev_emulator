@@ -59,6 +59,7 @@ typedef enum
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 UART_HandleTypeDef huart3;
 
@@ -73,6 +74,7 @@ t_do DoV_S2_Out;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -150,9 +152,21 @@ void LedStatusHandler(void)
 
 }
 // ---------------------------------------------------------------------------
-volatile uint16_t adc0_in = 0;
-volatile uint16_t adc0_voltage = 0;
-volatile uint16_t adc1_in = 0;
+#define ADC_CHNLS_SUM                2u // количество сканируемых каналов АЦП
+#define ADC_CP_FREQ                  1000.0 // частота входного сигнала CP
+#define ADC_DATA_FREQ                2*47600.0 // количество преобразований АЦП в секунду
+#define ADC_DATA_PER_CP_PERIOD       ADC_DATA_FREQ/ADC_CP_FREQ // кол-во преобразований АЦП за период сигнала CP
+#define ADC_NUMBER_OF_CP_CYCLES      10u // кол-во захватываемых циклов сигнала CP
+#define ADC_NUMBER_OF_CONVERSIONS    (uint16_t)(ADC_NUMBER_OF_CP_CYCLES * ADC_DATA_PER_CP_PERIOD) // общее кол-во захваченных данных сигнала CP
+#define ARR_CP_DATA_SIZE             ADC_NUMBER_OF_CONVERSIONS
+
+volatile uint16_t ArrayCpDataCounter = 0;
+volatile uint16_t ArrayCpData[ARR_CP_DATA_SIZE];
+volatile uint16_t adc_dma_data[ADC_CHNLS_SUM];
+volatile bool adc_run_flag = false;
+
+// volatile uint16_t adc0_voltage = 0;
+// volatile uint16_t adc1_in = 0;
 
 #define FILTR_DEPTH    4u
 
@@ -184,15 +198,34 @@ uint16_t AdcToVoltageCalc(uint16_t adc_data)
 	return result;
 }
 
+void AdcDataCaptureManager(void)
+{
+	static uint32_t time;
+	
+	if( (HAL_GetTick() - time) > 200 )
+	{
+		ArrayCpDataCounter = 0;
+		adc_run_flag = true;
+		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
+		time = HAL_GetTick();
+	}
+}
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
+//	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
 	{
-		adc0_in = HAL_ADC_GetValue(hadc);
-		adc0_in = AdcFiltr(adc0_in);
-		adc0_voltage = AdcToVoltageCalc(adc0_in);
-////		HAL_ADC_Start_IT(hadc);
-		HAL_ADC_Start_IT(&hadc1);
+		if(adc_run_flag)
+		{
+			ArrayCpData[ArrayCpDataCounter] = adc_dma_data[0];
+			HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
+		}
+
+		if( ++ArrayCpDataCounter == ARR_CP_DATA_SIZE )
+		{
+			adc_run_flag = false;
+		}
+		
 		DO_Toggle(&DoV_S2_Out);
 	}
 }
@@ -228,9 +261,11 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-	HAL_ADC_Start_IT(&hadc1);
+//	HAL_ADC_Start_IT(&hadc1);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -249,6 +284,7 @@ int main(void)
 //		HAL_Delay(500);
 //		DO_Toggle(&DoLedStatus);
 		LedStatusHandler();
+		AdcDataCaptureManager();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -298,7 +334,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSRC_PCLK2_DIV_8);
+  LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSRC_PCLK2_DIV_6);
 }
 
 /**
@@ -321,12 +357,12 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 2;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -336,6 +372,14 @@ static void MX_ADC1_Init(void)
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -380,6 +424,22 @@ static void MX_USART3_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -398,7 +458,7 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
   /**/
-  LL_GPIO_ResetOutputPin(V_S2_OUT_GPIO_Port, V_S2_OUT_Pin);
+  LL_GPIO_SetOutputPin(V_S2_OUT_GPIO_Port, V_S2_OUT_Pin);
 
   /**/
   GPIO_InitStruct.Pin = LED_STATUS_Pin;
