@@ -165,12 +165,9 @@ volatile uint16_t ArrayCpData[ARR_CP_DATA_SIZE];
 volatile uint16_t adc_dma_data[ADC_CHNLS_SUM];
 volatile bool adc_run_flag = false;
 
-// volatile uint16_t adc0_voltage = 0;
-// volatile uint16_t adc1_in = 0;
-
 #define FILTR_DEPTH    4u
 
-
+// ---------------------------------------------------------------------------
 uint16_t AdcFiltr(uint16_t data)
 {
 	static uint32_t accum = 0;
@@ -180,7 +177,7 @@ uint16_t AdcFiltr(uint16_t data)
 	
 	return (uint16_t)(accum>>FILTR_DEPTH);
 }
-
+// ---------------------------------------------------------------------------
 #define ADC_RESOLUTION    4095
 #define MAX_INPUT_VOLTAGE (3.3f) * 1000
 #define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
@@ -197,12 +194,13 @@ uint16_t AdcToVoltageCalc(uint16_t adc_data)
 	
 	return result;
 }
-
+// ---------------------------------------------------------------------------
+#define ADC_CAPTURE_DELAY_MS    200
 void AdcDataCaptureManager(void)
 {
-	static uint32_t time;
+	static uint32_t time = 0;
 	
-	if( (HAL_GetTick() - time) > 200 )
+	if( (HAL_GetTick() - time) > ADC_CAPTURE_DELAY_MS )
 	{
 		ArrayCpDataCounter = 0;
 		adc_run_flag = true;
@@ -210,23 +208,18 @@ void AdcDataCaptureManager(void)
 		time = HAL_GetTick();
 	}
 }
-
+// ---------------------------------------------------------------------------
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-//	if(__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
+	if(adc_run_flag)
 	{
-		if(adc_run_flag)
-		{
-			ArrayCpData[ArrayCpDataCounter] = adc_dma_data[0];
-			HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
-		}
+		ArrayCpData[ArrayCpDataCounter] = adc_dma_data[0];
+		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
+	}
 
-		if( ++ArrayCpDataCounter == ARR_CP_DATA_SIZE )
-		{
-			adc_run_flag = false;
-		}
-		
-		DO_Toggle(&DoV_S2_Out);
+	if( ++ArrayCpDataCounter == ARR_CP_DATA_SIZE )
+	{
+		adc_run_flag = false;
 	}
 }
 // ---------------------------------------------------------------------------
@@ -264,8 +257,7 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-//	HAL_ADC_Start_IT(&hadc1);
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -281,8 +273,6 @@ int main(void)
 	
   while (1)
   {
-//		HAL_Delay(500);
-//		DO_Toggle(&DoLedStatus);
 		LedStatusHandler();
 		AdcDataCaptureManager();
     /* USER CODE END WHILE */
