@@ -25,11 +25,13 @@ public:
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 
 	void ConnectLed(cDO *led_status);
+	void ConnectS2Switch(cDO *v_s2_out_switch);
 	void ConnectADC(cADC *adc);
 
 private:
 
 	cDO *m_led_status;
+	cDO *m_v_s2_out_switch;
 	cADC *m_adc;
 
 	evse_ticks_ms_t (*GetTicksMs)();

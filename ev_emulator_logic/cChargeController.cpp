@@ -9,6 +9,7 @@ namespace evse_logic {
 // ---------------------------------------------------------------------------
 cEvEmulator::cEvEmulator(const char * name) :
 	m_led_status(NULL),
+	m_v_s2_out_switch(NULL),
 	m_adc(NULL)
 {
 	TAG = name;
@@ -36,6 +37,9 @@ void cEvEmulator::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
 // ---------------------------------------------------------------------------
 void cEvEmulator::ConnectLed(cDO *led_status)
 { m_led_status = led_status; }
+// ---------------------------------------------------------------------------
+void cEvEmulator::ConnectS2Switch(cDO *v_s2_out_switch)
+{ m_v_s2_out_switch = v_s2_out_switch; }
 // ---------------------------------------------------------------------------
 void cEvEmulator::ConnectADC(cADC *adc)
 { m_adc = adc; }
