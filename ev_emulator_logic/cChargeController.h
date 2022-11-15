@@ -12,12 +12,12 @@
 namespace evse_logic
 {
 
-class cChargeController : public iChargeController, public iThread
+class cEvEmulator : public iChargeController, public iThread
 {
 public:
 
-	cChargeController(const char * name);
-	virtual ~cChargeController();
+	cEvEmulator(const char * name);
+	virtual ~cEvEmulator();
 
 	virtual void AddView(iView &view);
 

@@ -230,6 +230,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 }
 void AdcStartCapture(void)
 {
+	LOG_DEBUG(TAG, "AdcStartCapture()");
 	ArrayCpDataCounter = 0;
 	adc_run_flag = true;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);

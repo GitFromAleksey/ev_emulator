@@ -21,7 +21,7 @@ using namespace evse_logic;
 
 std::list<iThread*> proc_list;
 // ---------------------------------------------------------------------------
-cChargeController *evse = NULL;
+cEvEmulator *evse = NULL;
 cLocalControl *local_control = NULL;
 cOCPP *ocpp = NULL;
 cDebugInterface *debug = NULL;
@@ -35,7 +35,7 @@ void EvseInit(evse_init_t *evse_init)
 {
 	LOG_DEBUG("__FILE__","EvseInit");
 	
-	evse = new cChargeController("EVSE");
+	evse = new cEvEmulator("EVSE");
 	local_control = new cLocalControl("local control");
 	ocpp = new cOCPP("ocpp");
 	debug = new cDebugInterface("debug");

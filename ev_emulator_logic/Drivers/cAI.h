@@ -12,6 +12,12 @@ namespace evse_logic
 class cADC : public iThread
 {
 public:
+
+	bool (*adcDataReady)();
+	void (*adcStartCapture)();
+	uint16_t (*adcGetCpData)(uint16_t * adc_data);
+	uint16_t (*adcGetPpData)(uint16_t * adc_data);
+
 	cADC(const char * name);
 	virtual ~cADC();
 
@@ -31,10 +37,7 @@ protected:
 	const char * TAG;
 	float m_filtr_depth;
 
-	bool (*adcDataReady)();
-	void (*adcStartCapture)();
-	uint16_t (*adcGetCpData)(uint16_t * adc_data);
-	uint16_t (*adcGetPpData)(uint16_t * adc_data);
+
 
 };
 

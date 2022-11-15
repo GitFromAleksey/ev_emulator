@@ -7,7 +7,7 @@
 namespace evse_logic {
 
 // ---------------------------------------------------------------------------
-cChargeController::cChargeController(const char * name) :
+cEvEmulator::cEvEmulator(const char * name) :
 	m_led_status(NULL),
 	m_adc(NULL)
 {
@@ -15,34 +15,34 @@ cChargeController::cChargeController(const char * name) :
 	LOG_DEBUG(TAG, "create charge controller.");
 }
 // ---------------------------------------------------------------------------
-cChargeController::~cChargeController() {}
+cEvEmulator::~cEvEmulator() {}
 // ---------------------------------------------------------------------------
-void cChargeController::AddView(iView &view)
+void cEvEmulator::AddView(iView &view)
 {
 	LOG_DEBUG(TAG, "Add view.");
 }
 // ---------------------------------------------------------------------------
-void cChargeController::run(void *params)
+void cEvEmulator::run(void *params)
 {
 	LedStatusDriver();
 	AdcDriver();
 }
 // ---------------------------------------------------------------------------
-void cChargeController::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
+void cEvEmulator::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
 {
 	GetTicksMs = getTicksMs;
 	LOG_DEBUG(TAG, "SetGetTicksMsFunc. Ticks = %d", GetTicksMs());
 }
 // ---------------------------------------------------------------------------
-void cChargeController::ConnectLed(cDO *led_status)
+void cEvEmulator::ConnectLed(cDO *led_status)
 { m_led_status = led_status; }
 // ---------------------------------------------------------------------------
-void cChargeController::ConnectADC(cADC *adc)
+void cEvEmulator::ConnectADC(cADC *adc)
 { m_adc = adc; }
 // ---------------------------------------------------------------------------
 // private
 // ---------------------------------------------------------------------------
-void cChargeController::LedStatusDriver()
+void cEvEmulator::LedStatusDriver()
 {
 	static uint32_t ticks = 0;
 	static bool led_state = false;
@@ -68,7 +68,7 @@ void cChargeController::LedStatusDriver()
 	}
 }
 // ---------------------------------------------------------------------------
-void cChargeController::AdcDriver()
+void cEvEmulator::AdcDriver()
 {
 	static uint32_t ticks = 0;
 
