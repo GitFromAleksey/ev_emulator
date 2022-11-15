@@ -121,41 +121,41 @@ void VS2OutSwitch(bool set)
 {
 	DO_Switch(&DoV_S2_Out, set);
 }
-void LedStatusHandler(void)
-{
-	#define DEFAULT_DELAY    1000u
-	static uint32_t prev_time_ms = 0;
-	uint16_t period = DEFAULT_DELAY;
-	uint16_t delay = DEFAULT_DELAY>>1;
-	uint32_t time_delta = HAL_GetTick() - prev_time_ms;
-	
-	switch((int)EV_STATUS)
-	{
-		case EV_READY:
-			break;
-		case EV_ERROR:
-			break;
-		case EV_WARNING:
-			break;
-		case EV_NONE:
-//			delay = 500;
-			break;
-		default:
-			break;
-	}
-	
-	if( time_delta > period)
-	{
-		prev_time_ms = HAL_GetTick();
-		LedStatusSwitch(true);
+//void LedStatusHandler(void)
+//{
+//	#define DEFAULT_DELAY    1000u
+//	static uint32_t prev_time_ms = 0;
+//	uint16_t period = DEFAULT_DELAY;
+//	uint16_t delay = DEFAULT_DELAY>>1;
+//	uint32_t time_delta = HAL_GetTick() - prev_time_ms;
+//	
+//	switch((int)EV_STATUS)
+//	{
+//		case EV_READY:
+//			break;
+//		case EV_ERROR:
+//			break;
+//		case EV_WARNING:
+//			break;
+//		case EV_NONE:
+////			delay = 500;
+//			break;
+//		default:
+//			break;
+//	}
+//	
+//	if( time_delta > period)
+//	{
+//		prev_time_ms = HAL_GetTick();
+//		LedStatusSwitch(true);
 
-	}
-	else if( time_delta > delay)
-	{
-		LedStatusSwitch(false);
-	}
+//	}
+//	else if( time_delta > delay)
+//	{
+//		LedStatusSwitch(false);
+//	}
 
-}
+//}
 // ---------------------------------------------------------------------------
 #define ADC_CHNLS_SUM                2u // количество сканируемых каналов АЦП
 #define ADC_CP_FREQ                  1000.0 // частота входного сигнала CP
@@ -200,19 +200,20 @@ uint16_t AdcToVoltageCalc(uint16_t adc_data)
 	return result;
 }
 // ---------------------------------------------------------------------------
-#define ADC_CAPTURE_DELAY_MS    200
-void AdcDataCaptureManager(void)
-{
-	static uint32_t time = 0;
-	
-	if( (HAL_GetTick() - time) > ADC_CAPTURE_DELAY_MS )
-	{
-		ArrayCpDataCounter = 0;
-		adc_run_flag = true;
-		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
-		time = HAL_GetTick();
-	}
-}
+//#define ADC_CAPTURE_DELAY_MS    200
+//void AdcDataCaptureManager(void)
+//{
+//	static uint32_t time = 0;
+//	
+//	if( (HAL_GetTick() - time) > ADC_CAPTURE_DELAY_MS )
+//	{
+//		ArrayCpDataCounter = 0;
+//		adc_run_flag = true;
+//		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
+//		time = HAL_GetTick();
+//	}
+//}
+
 // ---------------------------------------------------------------------------
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
@@ -227,19 +228,34 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 		adc_run_flag = false;
 	}
 }
+void AdcStartCapture(void)
+{
+	ArrayCpDataCounter = 0;
+	adc_run_flag = true;
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
+}
 bool AdcConversionComplete(void)
 {
 	return !adc_run_flag;
+}
+uint16_t AdcGetCpData(uint16_t * adc_data)
+{
+	adc_data = (uint16_t*)ArrayCpData;
+	return ARR_CP_DATA_SIZE;
+}
+uint16_t AdcGetPpData(uint16_t * adc_data)
+{
+	return 0;
 }
 // ---------------------------------------------------------------------------
 void DeviceInit(void)
 {
 	evse_init_t evse_init;
 	
-//	evse_init.adcDataReady = 
-//	evse_init.adcStartCapture = 
-//	evse_init.getCpData = 
-//	evse_init.getPpData = 
+	evse_init.adcDataReady    = AdcConversionComplete;
+	evse_init.adcStartCapture = AdcStartCapture;
+	evse_init.adcGetCpData    = AdcGetCpData;
+	evse_init.adcGetPpData    = AdcGetPpData;
 	evse_init.vS2OutSwitch    = VS2OutSwitch;
 	evse_init.ledStatusSwitch = LedStatusSwitch;
 	evse_init.getTicksMs      = HAL_GetTick;
@@ -303,7 +319,7 @@ int main(void)
   while (1)
   {
 //		LedStatusHandler();
-		AdcDataCaptureManager();
+//		AdcDataCaptureManager();
 		EvseRun(NULL);
     /* USER CODE END WHILE */
 

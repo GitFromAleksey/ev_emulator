@@ -27,7 +27,7 @@ cOCPP *ocpp = NULL;
 cDebugInterface *debug = NULL;
 
 cDO *led_status = NULL;
-cAI *cp_line_control = NULL;
+cADC *cp_line_control = NULL;
 
 
 // ---------------------------------------------------------------------------
@@ -42,7 +42,7 @@ void EvseInit(evse_init_t *evse_init)
 
 	led_status = new cDO("Led status", false);
 	led_status->SetDriverSwitchCallback(evse_init->ledStatusSwitch);
-	cp_line_control = new cAI("CP_LINE_CONTROL");
+	cp_line_control = new cADC("CP_LINE_CONTROL");
 
 
 	evse->AddView(*local_control);

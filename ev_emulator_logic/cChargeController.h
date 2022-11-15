@@ -25,12 +25,12 @@ public:
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 
 	void ConnectLed(cDO *led_status);
-	void ConnectCP(cAI *cp_line_control);
+	void ConnectCP(cADC *cp_line_control);
 
 private:
 
 	cDO *m_led_status;
-	cAI *m_cp_line_control;
+	cADC *m_cp_line_control;
 
 	evse_ticks_ms_t (*GetTicksMs)();
 

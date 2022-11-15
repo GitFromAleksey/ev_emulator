@@ -9,22 +9,35 @@
 namespace evse_logic
 {
 
-class cAI : public iThread
+class cADC : public iThread
 {
 public:
-	cAI(const char * name);
-	virtual ~cAI();
+	cADC(const char * name);
+	virtual ~cADC();
 
 	virtual void run(void *params);
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
+
+	void (*setAdcDataReadyCallback)(bool (*adcDataReady)());
+	void (*setAdcStartCaptureCallback)(void (*adcStartCapture)());
+	void (*setGetCpDataCallback)(uint16_t (*adcGetCpData)(uint16_t * adc_data));
+	void (*setGetPpDataCallback)(uint16_t (*adcGetPpData)(uint16_t * adc_data));
 
 	void SetFiltrDepth(float depth);
 	void SetScale(float scale);
 	uint32_t GetRawValue();
 
+
+
 protected:
 	const char * TAG;
 	float m_filtr_depth;
+
+	bool (*adcDataReady)();
+	void (*adcStartCapture)();
+	uint16_t (*adcGetCpData)(uint16_t * adc_data);
+	uint16_t (*adcGetPpData)(uint16_t * adc_data);
+
 };
 
 } /* namespace evse_logic */

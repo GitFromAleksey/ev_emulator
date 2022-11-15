@@ -9,8 +9,8 @@ typedef struct
 {
 	bool (*adcDataReady)();
 	void (*adcStartCapture)();
-	uint16_t (*getCpData)(uint16_t * adc_data);
-	uint16_t (*getPpData)(uint16_t * adc_data);
+	uint16_t (*adcGetCpData)(uint16_t * adc_data);
+	uint16_t (*adcGetPpData)(uint16_t * adc_data);
 	void (*vS2OutSwitch)(bool set);
 	void (*ledStatusSwitch)(bool set);
 	evse_ticks_ms_t (*getTicksMs)();

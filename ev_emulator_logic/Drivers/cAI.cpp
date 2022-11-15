@@ -1,35 +1,41 @@
+#include <stddef.h>
 #include "cAI.h"
 
 namespace evse_logic
 {
 
 // ---------------------------------------------------------------------------
-cAI::cAI(const char * name)
+cADC::cADC(const char * name)
 {
 	TAG = name;
-	LOG_DEBUG(TAG, "cAI create");
+	LOG_DEBUG(TAG, "cADC create");
+	
+	adcDataReady    = NULL;
+	adcStartCapture = NULL;
+	adcGetCpData       = NULL;
+	adcGetPpData       = NULL;
 }
 // ---------------------------------------------------------------------------
-cAI::~cAI()
+cADC::~cADC()
 {
 	// TODO Auto-generated destructor stub
 }
 // ---------------------------------------------------------------------------
-void cAI::run(void *params)
+void cADC::run(void *params)
 {
 
 }
 // ---------------------------------------------------------------------------
-void cAI::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
+void cADC::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
 {
 	LOG_DEBUG(TAG, "SetGetTicksMsFunc. Ticks = %d", getTicksMs());
 }
 // ---------------------------------------------------------------------------
-void cAI::SetFiltrDepth(float depth) {}
+void cADC::SetFiltrDepth(float depth) {}
 // ---------------------------------------------------------------------------
-void cAI::SetScale(float scale) {}
+void cADC::SetScale(float scale) {}
 // ---------------------------------------------------------------------------
-uint32_t cAI::GetRawValue()
+uint32_t cADC::GetRawValue()
 {
 	return 0;
 }
