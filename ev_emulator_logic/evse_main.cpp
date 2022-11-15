@@ -49,6 +49,7 @@ void EvseInit(evse_init_t *evse_init)
 	evse->AddView(*ocpp);
 	evse->AddView(*debug);
 
+	evse->ConnectLed(led_status);
 	evse->ConnectCP(cp_line_control);
 
 	proc_list.push_back(evse);

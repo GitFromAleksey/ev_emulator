@@ -858,7 +858,7 @@
           <Files>
             <File>
               <FileName>EvseLogger.c</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\Common\EvseLogger.c</FilePath>
             </File>
           </Files>

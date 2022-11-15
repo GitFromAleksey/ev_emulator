@@ -24,14 +24,19 @@ public:
 	virtual void run(void *params);
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 
-	void ConnectCP(cAI *m_cp_line_control);
+	void ConnectLed(cDO *led_status);
+	void ConnectCP(cAI *cp_line_control);
 
 private:
 
-	cDO *m_lad_status;
+	cDO *m_led_status;
 	cAI *m_cp_line_control;
 
 	evse_ticks_ms_t (*GetTicksMs)();
+
+	const uint32_t led_delay_ms = 1000;
+
+	void LedStatusDriver();
 };
 
 } /* namespace ChargeController */
