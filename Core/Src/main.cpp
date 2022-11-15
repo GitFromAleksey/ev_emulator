@@ -302,7 +302,7 @@ int main(void)
 	
   while (1)
   {
-		LedStatusHandler();
+//		LedStatusHandler();
 		AdcDataCaptureManager();
 		EvseRun(NULL);
     /* USER CODE END WHILE */

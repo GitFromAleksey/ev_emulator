@@ -28,6 +28,7 @@ public:
 
 private:
 
+	cDO *m_lad_status;
 	cAI *m_cp_line_control;
 
 	evse_ticks_ms_t (*GetTicksMs)();

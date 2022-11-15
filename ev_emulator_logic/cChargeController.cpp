@@ -7,7 +7,8 @@
 namespace evse_logic {
 
 // ---------------------------------------------------------------------------
-	cChargeController::cChargeController(const char * name) :
+cChargeController::cChargeController(const char * name) :
+	m_lad_status(NULL),
 	m_cp_line_control(NULL)
 {
 	TAG = name;

@@ -26,18 +26,22 @@ cLocalControl *local_control = NULL;
 cOCPP *ocpp = NULL;
 cDebugInterface *debug = NULL;
 
+cDO *led_status = NULL;
 cAI *cp_line_control = NULL;
 
 
 // ---------------------------------------------------------------------------
 void EvseInit(evse_init_t *evse_init)
 {
+	LOG_DEBUG("__FILE__","EvseInit");
+	
 	evse = new cChargeController("EVSE");
 	local_control = new cLocalControl("local control");
 	ocpp = new cOCPP("ocpp");
 	debug = new cDebugInterface("debug");
 
-
+	led_status = new cDO("Led status", false);
+	led_status->SetDriverSwitchCallback(evse_init->ledStatusSwitch);
 	cp_line_control = new cAI("CP_LINE_CONTROL");
 
 

@@ -16,10 +16,16 @@ public:
 	virtual void run(void *params);
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 
+	void SetDriverSwitchCallback(void (*switchCallback)(bool set));
 	void SetState(bool state);
 	void SwitchOn();
 	void SwitchOff();
 	void Toggle();
+
+private:
+	
+	void (*SwitchCallback)(bool set);
+
 };
 
 } /* namespace evse_logic */
