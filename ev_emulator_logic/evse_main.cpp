@@ -27,7 +27,7 @@ cOCPP *ocpp = NULL;
 cDebugInterface *debug = NULL;
 
 cDO *led_status = NULL;
-cADC *cp_line_control = NULL;
+cADC *adc = NULL;
 
 
 // ---------------------------------------------------------------------------
@@ -42,7 +42,12 @@ void EvseInit(evse_init_t *evse_init)
 
 	led_status = new cDO("Led status", false);
 	led_status->SetDriverSwitchCallback(evse_init->ledStatusSwitch);
-	cp_line_control = new cADC("CP_LINE_CONTROL");
+	
+	adc = new cADC("CP_LINE_CONTROL");
+	adc->SetAdcDataReadyCallback(evse_init->adcDataReady);
+	adc->SetAdcStartCaptureCallback(evse_init->adcStartCapture);
+	adc->SetGetCpDataCallback(evse_init->adcGetCpData);
+	adc->SetGetPpDataCallback(evse_init->adcGetPpData);
 
 
 	evse->AddView(*local_control);
@@ -50,14 +55,14 @@ void EvseInit(evse_init_t *evse_init)
 	evse->AddView(*debug);
 
 	evse->ConnectLed(led_status);
-	evse->ConnectCP(cp_line_control);
+	evse->ConnectADC(adc);
 
 	proc_list.push_back(evse);
 	proc_list.push_back(local_control);
 	proc_list.push_back(ocpp);
 	proc_list.push_back(debug);
 
-	proc_list.push_back(cp_line_control);
+	proc_list.push_back(adc);
 
 
 	for(auto it = proc_list.begin(); it != proc_list.end(); ++it)

@@ -18,16 +18,14 @@ public:
 	virtual void run(void *params);
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 
-	void (*setAdcDataReadyCallback)(bool (*adcDataReady)());
-	void (*setAdcStartCaptureCallback)(void (*adcStartCapture)());
-	void (*setGetCpDataCallback)(uint16_t (*adcGetCpData)(uint16_t * adc_data));
-	void (*setGetPpDataCallback)(uint16_t (*adcGetPpData)(uint16_t * adc_data));
+	void SetAdcDataReadyCallback(bool (*adcDataReady)());
+	void SetAdcStartCaptureCallback(void (*adcStartCapture)());
+	void SetGetCpDataCallback(uint16_t (*adcGetCpData)(uint16_t * adc_data));
+	void SetGetPpDataCallback(uint16_t (*adcGetPpData)(uint16_t * adc_data));
 
 	void SetFiltrDepth(float depth);
 	void SetScale(float scale);
 	uint32_t GetRawValue();
-
-
 
 protected:
 	const char * TAG;

@@ -9,7 +9,7 @@ namespace evse_logic {
 // ---------------------------------------------------------------------------
 cChargeController::cChargeController(const char * name) :
 	m_led_status(NULL),
-	m_cp_line_control(NULL)
+	m_adc(NULL)
 {
 	TAG = name;
 	LOG_DEBUG(TAG, "create charge controller.");
@@ -36,8 +36,8 @@ void cChargeController::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
 void cChargeController::ConnectLed(cDO *led_status)
 { m_led_status = led_status; }
 // ---------------------------------------------------------------------------
-void cChargeController::ConnectCP(cADC *cp_line_control)
-{ m_cp_line_control = cp_line_control; }
+void cChargeController::ConnectADC(cADC *adc)
+{ m_adc = adc; }
 // ---------------------------------------------------------------------------
 // private
 // ---------------------------------------------------------------------------
