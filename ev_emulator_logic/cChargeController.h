@@ -24,31 +24,10 @@ public:
 	virtual void run(void *params);
 	virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 
-	void ConnectVent( cDO *m_vent_switch);
-	void ConnectContactorSwitch(cDO *m_contactor_switch);
-	void ConnectContactorFeedBack(cDI *m_contactor_feedback);
-	void ConnectEmergencyStopButton(cDI *m_emergency_stop_button);
-	void ConnectLeakageCurrentInput(cDI *m_leakage_current);
-
-	void ConnectPPinput(cAI *m_pp_proximity_plug);
-	void ConnectLockSignal(cDO *m_evse_lock_signal);
-	void ConnectLockFeedback(cDI *m_evse_lock_signal_feedback);
-
-	void ConnectPWM(cPWM *m_pwm);
 	void ConnectCP(cAI *m_cp_line_control);
 
 private:
-	cDO *m_vent_switch;
-	cDO *m_contactor_switch;
-	cDI *m_contactor_feedback;
-	cDI *m_emergency_stop_button;
-	cDI *m_leakage_current;
 
-	cAI *m_pp_proximity_plug;
-	cDO *m_evse_lock_signal;
-	cDI *m_evse_lock_signal_feedback;
-
-	cPWM *m_pwm;
 	cAI *m_cp_line_control;
 
 	evse_ticks_ms_t (*GetTicksMs)();

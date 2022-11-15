@@ -19,12 +19,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "EventRecorder.h"
-#include "EvseLogger.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include "EventRecorder.h"
+#include "EvseLogger.h"
+#include "evse_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +53,7 @@ typedef enum
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define TAG    __FILE__
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -146,7 +148,7 @@ void LedStatusHandler(void)
 	{
 		prev_time_ms = HAL_GetTick();
 		LedStatusSwitch(true);
-		LOG_DEBUG("main.cpp","Led toggle"); 
+
 	}
 	else if( time_delta > delay)
 	{
@@ -230,6 +232,20 @@ bool AdcConversionComplete(void)
 	return !adc_run_flag;
 }
 // ---------------------------------------------------------------------------
+void DeviceInit(void)
+{
+	evse_init_t evse_init;
+	
+//	evse_init.adcDataReady = 
+//	evse_init.adcStartCapture = 
+//	evse_init.getCpData = 
+//	evse_init.getPpData = 
+	evse_init.vS2OutSwitch    = VS2OutSwitch;
+	evse_init.ledStatusSwitch = LedStatusSwitch;
+	evse_init.getTicksMs      = HAL_GetTick;
+	
+	EvseInit(&evse_init);
+}
 /* USER CODE END 0 */
 
 /**
@@ -280,10 +296,15 @@ int main(void)
 	SendMessage((uint8_t*)uart_str, 18);
 	EV_STATUS = EV_NONE;
 	
+	DeviceInit();
+	
+	LOG_DEBUG((char*)TAG,"START");
+	
   while (1)
   {
 		LedStatusHandler();
 		AdcDataCaptureManager();
+		EvseRun(NULL);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
