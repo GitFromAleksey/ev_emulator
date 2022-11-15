@@ -34,9 +34,11 @@ private:
 
 	evse_ticks_ms_t (*GetTicksMs)();
 
-	const uint32_t led_delay_ms = 1000;
+	const uint32_t LED_DELAY_MS = 1000;
+	const uint32_t ADC_DELAY_MS = 1000;
 
 	void LedStatusDriver();
+	void AdcDriver();
 };
 
 } /* namespace ChargeController */

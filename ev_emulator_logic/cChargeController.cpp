@@ -25,6 +25,7 @@ void cChargeController::AddView(iView &view)
 void cChargeController::run(void *params)
 {
 	LedStatusDriver();
+	AdcDriver();
 }
 // ---------------------------------------------------------------------------
 void cChargeController::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
@@ -58,12 +59,37 @@ void cChargeController::LedStatusDriver()
 		return;
 	}
 	
-	if( (GetTicksMs() - ticks) >= led_delay_ms )
+	if( (GetTicksMs() - ticks) >= LED_DELAY_MS )
 	{
 		ticks = GetTicksMs();
 		m_led_status->SetState(led_state);
 		led_state = !led_state;
+//		LOG_DEBUG(TAG, "led blink!");
 	}
+}
+// ---------------------------------------------------------------------------
+void cChargeController::AdcDriver()
+{
+	static uint32_t ticks = 0;
+
+	if(GetTicksMs == NULL)
+	{
+		LOG_ERROR(TAG, "GetTicksMs == NULL");
+		return;
+	}
+	
+	if( (GetTicksMs() - ticks) < ADC_DELAY_MS )
+		return;
+	ticks = GetTicksMs();
+	
+	if(m_adc == NULL)
+	{
+		LOG_ERROR(TAG, "m_adc == NULL");
+		return;
+	}
+	LOG_DEBUG(TAG, "AdcDriver!");
+//	if(m_adc->adcDataReady)
+		m_adc->adcStartCapture();
 }
 // ---------------------------------------------------------------------------
 
