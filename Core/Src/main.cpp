@@ -163,42 +163,44 @@ void VS2OutSwitch(bool set)
 #define ADC_DATA_PER_CP_PERIOD       ADC_DATA_FREQ/ADC_CP_FREQ // кол-во преобразований АЦП за период сигнала CP
 #define ADC_NUMBER_OF_CP_CYCLES      10u // кол-во захватываемых циклов сигнала CP
 #define ADC_NUMBER_OF_CONVERSIONS    (uint16_t)(ADC_NUMBER_OF_CP_CYCLES * ADC_DATA_PER_CP_PERIOD) // общее кол-во захваченных данных сигнала CP
-#define ARR_CP_DATA_SIZE             ADC_NUMBER_OF_CONVERSIONS
+#define ADC_ARR_DATA_SIZE             ADC_NUMBER_OF_CONVERSIONS
 
-volatile uint16_t ArrayCpDataCounter = 0;
-volatile uint16_t ArrayCpData[ARR_CP_DATA_SIZE];
+
+volatile uint16_t ArrayDataCounter = 0;
+volatile uint16_t ArrayPpData[ADC_ARR_DATA_SIZE];
+volatile uint16_t ArrayCpData[ADC_ARR_DATA_SIZE];
 volatile uint16_t adc_dma_data[ADC_CHNLS_SUM];
 volatile bool adc_run_flag = false;
 
-#define FILTR_DEPTH    4u
+//#define FILTR_DEPTH    4u
 
+//// ---------------------------------------------------------------------------
+//uint16_t AdcFiltr(uint16_t data)
+//{
+//	static uint32_t accum = 0;
+//	
+//	accum -= accum>>FILTR_DEPTH;
+//	accum += data;
+//	
+//	return (uint16_t)(accum>>FILTR_DEPTH);
+//}
 // ---------------------------------------------------------------------------
-uint16_t AdcFiltr(uint16_t data)
-{
-	static uint32_t accum = 0;
-	
-	accum -= accum>>FILTR_DEPTH;
-	accum += data;
-	
-	return (uint16_t)(accum>>FILTR_DEPTH);
-}
-// ---------------------------------------------------------------------------
-#define ADC_RESOLUTION    4095
-#define MAX_INPUT_VOLTAGE (3.3f) * 1000
-#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
-#define COEF_FP (uint32_t)(COEF * 0xFFFF)
+//#define ADC_RESOLUTION    4095
+//#define MAX_INPUT_VOLTAGE (3.3f) * 1000
+//#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
+//#define COEF_FP (uint32_t)(COEF * 0xFFFF)
 
-uint16_t AdcToVoltageCalc(uint16_t adc_data)
-{
-	uint16_t result = 0;
-	uint32_t temp = adc_data;
+//uint16_t AdcToVoltageCalc(uint16_t adc_data)
+//{
+//	uint16_t result = 0;
+//	uint32_t temp = adc_data;
 
-	temp = COEF_FP * temp;
-	temp = temp>>16;
-	result = temp;
-	
-	return result;
-}
+//	temp = COEF_FP * temp;
+//	temp = temp>>16;
+//	result = temp;
+//	
+//	return result;
+//}
 // ---------------------------------------------------------------------------
 //#define ADC_CAPTURE_DELAY_MS    200
 //void AdcDataCaptureManager(void)
@@ -207,7 +209,7 @@ uint16_t AdcToVoltageCalc(uint16_t adc_data)
 //	
 //	if( (HAL_GetTick() - time) > ADC_CAPTURE_DELAY_MS )
 //	{
-//		ArrayCpDataCounter = 0;
+//		ArrayDataCounter = 0;
 //		adc_run_flag = true;
 //		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
 //		time = HAL_GetTick();
@@ -219,11 +221,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	if(adc_run_flag)
 	{
-		ArrayCpData[ArrayCpDataCounter] = adc_dma_data[0];
+		ArrayPpData[ArrayDataCounter] = adc_dma_data[0];
+		ArrayCpData[ArrayDataCounter] = adc_dma_data[1];
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
 	}
 
-	if( ++ArrayCpDataCounter == ARR_CP_DATA_SIZE )
+	if( ++ArrayDataCounter == ADC_ARR_DATA_SIZE )
 	{
 		adc_run_flag = false;
 	}
@@ -231,7 +234,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 void AdcStartCapture(void)
 {
 //	LOG_DEBUG(TAG, "AdcStartCapture()");
-	ArrayCpDataCounter = 0;
+	ArrayDataCounter = 0;
 	adc_run_flag = true;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
 }
@@ -242,11 +245,12 @@ bool AdcConversionComplete(void)
 uint16_t AdcGetCpData(uint16_t ** adc_data)
 {
 	*adc_data = (uint16_t*)&ArrayCpData[0];
-	return ARR_CP_DATA_SIZE;
+	return ADC_ARR_DATA_SIZE;
 }
-uint16_t AdcGetPpData(uint16_t * adc_data)
+uint16_t AdcGetPpData(uint16_t ** adc_data)
 {
-	return 0;
+	*adc_data = (uint16_t*)&ArrayPpData[0];
+	return ADC_ARR_DATA_SIZE;
 }
 // ---------------------------------------------------------------------------
 void DeviceInit(void)

@@ -16,7 +16,7 @@ public:
 	bool (*adcDataReady)();
 	void (*adcStartCapture)();
 	uint16_t (*adcGetCpData)(uint16_t ** adc_data);
-	uint16_t (*adcGetPpData)(uint16_t * adc_data);
+	uint16_t (*adcGetPpData)(uint16_t ** adc_data);
 
 	cADC(const char * name);
 	virtual ~cADC();
@@ -27,7 +27,7 @@ public:
 	void SetAdcDataReadyCallback(bool (*adcDataReady)());
 	void SetAdcStartCaptureCallback(void (*adcStartCapture)());
 	void SetGetCpDataCallback(uint16_t (*adcGetCpData)(uint16_t ** adc_data));
-	void SetGetPpDataCallback(uint16_t (*adcGetPpData)(uint16_t * adc_data));
+	void SetGetPpDataCallback(uint16_t (*adcGetPpData)(uint16_t ** adc_data));
 
 	void SetFiltrDepth(float depth);
 	void SetScale(float scale);

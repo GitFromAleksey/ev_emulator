@@ -45,7 +45,7 @@ void cADC::SetGetCpDataCallback(uint16_t (*adcGetCpData)(uint16_t ** adc_data))
 	this->adcGetCpData = adcGetCpData;
 }
 // ---------------------------------------------------------------------------
-void cADC::SetGetPpDataCallback(uint16_t (*adcGetPpData)(uint16_t * adc_data))
+void cADC::SetGetPpDataCallback(uint16_t (*adcGetPpData)(uint16_t ** adc_data))
 {	
 	this->adcGetPpData = adcGetPpData;
 }

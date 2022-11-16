@@ -95,11 +95,15 @@ void cEvEmulator::AdcDriver()
 	}
 //	LOG_DEBUG(TAG, "AdcDriver!");
 	
-	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
+	adc_data_size = m_adc->adcGetPpData(&p_adc_data_arr);
 	adc_data_size = AdcDataFiltr(p_adc_data_arr, adc_data_size);
-	LOG_DEBUG( TAG, "PP raw value: 0x%X", AdcToVoltageCalc(adc_data_size) );
+	LOG_DEBUG( TAG, "PP raw value: 0x%X", adc_data_size );
 	LOG_DEBUG( TAG, "PP value: %u, V", AdcToVoltageCalc(adc_data_size) );
 	//LOG_DEBUG( TAG, "PP value: %u", AdcToVoltageCalc(p_adc_data_arr[10]) );
+	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
+	adc_data_size = AdcDataFiltr(p_adc_data_arr, adc_data_size);
+	LOG_DEBUG( TAG, "CP raw value: 0x%X", AdcToVoltageCalc(adc_data_size) );
+	LOG_DEBUG( TAG, "CP value: %u, V", AdcToVoltageCalc(adc_data_size) );
 	
 //	if(m_adc->adcDataReady)
 	m_adc->adcStartCapture();
