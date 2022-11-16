@@ -40,7 +40,7 @@ void cADC::SetAdcStartCaptureCallback(void (*adcStartCapture)())
 	this->adcStartCapture = adcStartCapture;
 }
 // ---------------------------------------------------------------------------
-void cADC::SetGetCpDataCallback(uint16_t (*adcGetCpData)(uint16_t * adc_data))
+void cADC::SetGetCpDataCallback(uint16_t (*adcGetCpData)(uint16_t ** adc_data))
 {	
 	this->adcGetCpData = adcGetCpData;
 }

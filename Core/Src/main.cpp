@@ -230,7 +230,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 }
 void AdcStartCapture(void)
 {
-	LOG_DEBUG(TAG, "AdcStartCapture()");
+//	LOG_DEBUG(TAG, "AdcStartCapture()");
 	ArrayCpDataCounter = 0;
 	adc_run_flag = true;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
@@ -239,9 +239,9 @@ bool AdcConversionComplete(void)
 {
 	return !adc_run_flag;
 }
-uint16_t AdcGetCpData(uint16_t * adc_data)
+uint16_t AdcGetCpData(uint16_t ** adc_data)
 {
-	adc_data = (uint16_t*)ArrayCpData;
+	*adc_data = (uint16_t*)&ArrayCpData[0];
 	return ARR_CP_DATA_SIZE;
 }
 uint16_t AdcGetPpData(uint16_t * adc_data)

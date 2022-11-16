@@ -10,7 +10,7 @@ typedef struct
 	void (*uartSendMessage)(uint8_t *msg, uint16_t len);
 	bool (*adcDataReady)();
 	void (*adcStartCapture)();
-	uint16_t (*adcGetCpData)(uint16_t * adc_data);
+	uint16_t (*adcGetCpData)(uint16_t ** adc_data);
 	uint16_t (*adcGetPpData)(uint16_t * adc_data);
 	void (*vS2OutSwitch)(bool set);
 	void (*ledStatusSwitch)(bool set);

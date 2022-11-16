@@ -41,6 +41,8 @@ private:
 
 	void LedStatusDriver();
 	void AdcDriver();
+	uint16_t AdcDataFiltr(uint16_t *data, uint16_t data_size);
+	uint16_t AdcToVoltageCalc(uint16_t adc_data);
 };
 
 } /* namespace ChargeController */
