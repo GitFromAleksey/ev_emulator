@@ -87,7 +87,7 @@ static void MX_ADC1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 const char * uart_str = "EV Emulator start\n";
-void SendMessage(uint8_t *msg, uint16_t len)
+void UartSendMessage(uint8_t *msg, uint16_t len)
 {
 	HAL_UART_Transmit(&huart3, msg, len,100);
 }
@@ -253,6 +253,7 @@ void DeviceInit(void)
 {
 	evse_init_t evse_init;
 	
+	evse_init.uartSendMessage = UartSendMessage;
 	evse_init.adcDataReady    = AdcConversionComplete;
 	evse_init.adcStartCapture = AdcStartCapture;
 	evse_init.adcGetCpData    = AdcGetCpData;
@@ -310,7 +311,7 @@ int main(void)
 	DoV_S2_Out.GPIOx = V_S2_OUT_GPIO_Port;
 	DoV_S2_Out.PortValue = V_S2_OUT_Pin;
 	
-	SendMessage((uint8_t*)uart_str, 18);
+	UartSendMessage((uint8_t*)uart_str, 18);
 	EV_STATUS = EV_NONE;
 	
 	DeviceInit();

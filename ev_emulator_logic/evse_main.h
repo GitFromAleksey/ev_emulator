@@ -7,6 +7,7 @@ typedef uint32_t evse_ticks_ms_t;
 
 typedef struct
 {
+	void (*uartSendMessage)(uint8_t *msg, uint16_t len);
 	bool (*adcDataReady)();
 	void (*adcStartCapture)();
 	uint16_t (*adcGetCpData)(uint16_t * adc_data);
