@@ -31,6 +31,7 @@ public:
 private:
 	uint16_t m_v_PP_value;      // значение сигнала PP, вольт
 	uint16_t m_v_CP_ampl_value; // амплитуда сигнала CP, вольт
+	uint8_t m_v_CP_duty_cycle; // скважность сигнала CP, вольт
 
 	cDO *m_led_status;
 	cDO *m_v_s2_out_switch;
@@ -49,6 +50,7 @@ private:
 	void V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size);
 	uint16_t FindMaxMinMiddle(uint16_t *p_max, uint16_t *p_middle, uint16_t *p_min, 
 														uint16_t *adc_data_arr, uint16_t data_size);
+	uint8_t DutyCyclyCalc(uint16_t *adc_data_arr, uint16_t data_size, uint16_t middle);
 
 	uint16_t AdcDataFiltr(uint16_t *data, uint16_t data_size);
 	uint16_t AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp);

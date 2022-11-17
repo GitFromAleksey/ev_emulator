@@ -20,6 +20,7 @@ namespace evse_logic {
 cEvEmulator::cEvEmulator(const char * name) :
 	m_v_PP_value(0),
 	m_v_CP_ampl_value(0),
+	m_v_CP_duty_cycle(0),
 	m_led_status(NULL),
 	m_v_s2_out_switch(NULL),
 	m_adc(NULL)
@@ -114,7 +115,12 @@ void cEvEmulator::AdcCalculations()
 	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
 	V_CpCalc(p_adc_data_arr, adc_data_size);
 	
-//	if(m_adc->adcDataReady)
+//	LOG_DEBUG(TAG, "CP duty_cycle = %u,%%", m_v_CP_duty_cycle); // скважность
+//	LOG_DEBUG(TAG, "CP_ampl_value = %u, V", m_v_CP_ampl_value); // амплитуда сигнала CP, вольт
+	
+	LOG_DEBUG(TAG, "PP: %u,V; CP: %u,V; CP duty: %u,%%", 
+									m_v_PP_value, m_v_CP_ampl_value, m_v_CP_duty_cycle);
+
 	m_adc->adcStartCapture();
 }
 // ---------------------------------------------------------------------------
@@ -135,14 +141,8 @@ void cEvEmulator::V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size)
 	uint16_t middle = 0;
 	
 	temp = FindMaxMinMiddle(&max, &middle, &min, adc_data_arr, data_size);
-	LOG_DEBUG(TAG, "max = 0x%X; %u, V", max, AdcToVoltageCalc(max, COEF_FP_CP));
-	LOG_DEBUG(TAG, "middle = 0x%X; %u, V", middle, AdcToVoltageCalc(middle, COEF_FP_CP));
-	LOG_DEBUG(TAG, "min = 0x%X; %u, V", min, AdcToVoltageCalc(min, COEF_FP_CP));
-//	LOG_DEBUG(TAG, "CP MAX raw: 0x%X", temp);
-	temp = AdcToVoltageCalc(temp, COEF_FP_CP);
-//	LOG_DEBUG(TAG, "CP MAX Value: %u, V", temp);
-	
-	m_v_CP_ampl_value = temp;
+	m_v_CP_ampl_value = AdcToVoltageCalc(max, COEF_FP_CP);
+	m_v_CP_duty_cycle = DutyCyclyCalc(adc_data_arr, data_size, middle);
 }
 // ---------------------------------------------------------------------------
 uint16_t cEvEmulator::FindMaxMinMiddle(uint16_t *p_max, uint16_t *p_middle, uint16_t *p_min, 
@@ -175,9 +175,52 @@ uint16_t cEvEmulator::FindMaxMinMiddle(uint16_t *p_max, uint16_t *p_middle, uint
 	*p_middle = (max - min)>>1;
 	*p_min    = min;
 	
-//	LOG_DEBUG(TAG, "max = 0x%X; %u, V", max, AdcToVoltageCalc(max, COEF_FP_CP));
-//	LOG_DEBUG(TAG, "middle = 0x%X; %u, V", middle, AdcToVoltageCalc(middle, COEF_FP_CP));
-//	LOG_DEBUG(TAG, "min = 0x%X; %u, V", min, AdcToVoltageCalc(min, COEF_FP_CP));
+	return result;
+}
+// ---------------------------------------------------------------------------
+uint8_t cEvEmulator::DutyCyclyCalc(uint16_t *adc_data_arr, uint16_t data_size, uint16_t middle)
+{
+	uint8_t result = 0;
+	uint16_t hi_counter = 0;
+	int32_t hi_counter_accum = 0;
+	uint16_t lo_counter = 0;
+	int32_t lo_counter_accum = 0;
+	uint8_t shift = 1;
+	
+	bool prev_state = (adc_data_arr[0] > middle)?(true):(false);
+	bool cur_state = prev_state;
+	for(uint16_t i = 1; i < data_size; ++i)
+	{
+		prev_state = cur_state;
+		cur_state = (adc_data_arr[i] > middle);
+		if( (prev_state == false) && (cur_state == true))
+		{
+			// восходящий фронт
+			hi_counter_accum -= hi_counter_accum>>shift;
+			hi_counter_accum += hi_counter;
+			hi_counter = 0;
+		}
+		else if( (prev_state == true) && (cur_state == false))
+		{
+			// низходящий фронт
+			lo_counter_accum -= lo_counter_accum>>shift;
+			lo_counter_accum += lo_counter;
+			lo_counter = 0;
+		}
+		
+		if(cur_state)
+		{
+			++hi_counter;
+		}
+		else
+		{
+			++lo_counter;
+		}
+	}
+	hi_counter = hi_counter_accum>>shift;
+	lo_counter = lo_counter_accum>>shift;
+	
+	result = ((hi_counter+lo_counter) == 0)?(0):((hi_counter*100)/(hi_counter+lo_counter));
 	
 	return result;
 }
