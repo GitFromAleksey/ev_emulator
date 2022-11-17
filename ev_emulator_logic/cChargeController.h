@@ -29,6 +29,8 @@ public:
 	void ConnectADC(cADC *adc);
 
 private:
+	uint16_t m_v_PP_value;      // значение сигнала PP, вольт
+	uint16_t m_v_CP_ampl_value; // амплитуда сигнала CP, вольт
 
 	cDO *m_led_status;
 	cDO *m_v_s2_out_switch;
@@ -36,13 +38,18 @@ private:
 
 	evse_ticks_ms_t (*GetTicksMs)();
 
-	const uint32_t LED_DELAY_MS = 1000;
-	const uint32_t ADC_DELAY_MS = 1000;
+	const uint8_t  FILTR_DEPTH  = 4;    // глубина фильтра
+	const uint32_t LED_DELAY_MS = 500;  // период мигания светодиодом
+	const uint32_t ADC_DELAY_MS = 1000; // период опроса АЦП
 
 	void LedStatusDriver();
-	void AdcDriver();
+	void AdcCalculations();
+	
+	void V_PpCalc(uint16_t *adc_data_arr, uint16_t data_size);
+	void V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size);
+
 	uint16_t AdcDataFiltr(uint16_t *data, uint16_t data_size);
-	uint16_t AdcToVoltageCalc(uint16_t adc_data);
+	uint16_t AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp);
 };
 
 } /* namespace ChargeController */

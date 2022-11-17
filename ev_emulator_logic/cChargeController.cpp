@@ -4,10 +4,22 @@
 #include "../Common/EvseLogger.h"
 
 
+#define ADC_RESOLUTION_PP    0x0FDC
+#define MAX_INPUT_VOLTAGE_PP (3.33f) * 1000
+#define COEF_PP    (MAX_INPUT_VOLTAGE_PP/ADC_RESOLUTION_PP)
+#define COEF_FP_PP (uint32_t)(COEF_PP * 0xFFFF)
+
+#define ADC_RESOLUTION_CP    0x0CA8
+#define MAX_INPUT_VOLTAGE_CP (9.00f) * 1000
+#define COEF_CP    (MAX_INPUT_VOLTAGE_CP/ADC_RESOLUTION_CP)
+#define COEF_FP_CP (uint32_t)(COEF_CP * 0xFFFF)
+
 namespace evse_logic {
 
 // ---------------------------------------------------------------------------
 cEvEmulator::cEvEmulator(const char * name) :
+	m_v_PP_value(0),
+	m_v_CP_ampl_value(0),
 	m_led_status(NULL),
 	m_v_s2_out_switch(NULL),
 	m_adc(NULL)
@@ -26,7 +38,7 @@ void cEvEmulator::AddView(iView &view)
 void cEvEmulator::run(void *params)
 {
 	LedStatusDriver();
-	AdcDriver();
+	AdcCalculations();
 }
 // ---------------------------------------------------------------------------
 void cEvEmulator::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
@@ -72,7 +84,7 @@ void cEvEmulator::LedStatusDriver()
 	}
 }
 // ---------------------------------------------------------------------------
-void cEvEmulator::AdcDriver()
+void cEvEmulator::AdcCalculations()
 {
 	static uint32_t ticks = 0;
 	uint16_t *p_adc_data_arr = NULL;
@@ -93,23 +105,31 @@ void cEvEmulator::AdcDriver()
 		LOG_ERROR(TAG, "m_adc == NULL");
 		return;
 	}
-//	LOG_DEBUG(TAG, "AdcDriver!");
 	
 	adc_data_size = m_adc->adcGetPpData(&p_adc_data_arr);
-	adc_data_size = AdcDataFiltr(p_adc_data_arr, adc_data_size);
-	LOG_DEBUG( TAG, "PP raw value: 0x%X", adc_data_size );
-	LOG_DEBUG( TAG, "PP value: %u, V", AdcToVoltageCalc(adc_data_size) );
-	//LOG_DEBUG( TAG, "PP value: %u", AdcToVoltageCalc(p_adc_data_arr[10]) );
-	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
-	adc_data_size = AdcDataFiltr(p_adc_data_arr, adc_data_size);
-	LOG_DEBUG( TAG, "CP raw value: 0x%X", AdcToVoltageCalc(adc_data_size) );
-	LOG_DEBUG( TAG, "CP value: %u, V", AdcToVoltageCalc(adc_data_size) );
+	V_PpCalc(p_adc_data_arr, adc_data_size);
+	LOG_DEBUG(TAG, "PP value: %u, V", m_v_PP_value);
+
+//	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
+//	adc_data_size = AdcDataFiltr(p_adc_data_arr, adc_data_size);
+//	LOG_DEBUG( TAG, "CP raw value: 0x%X", adc_data_size );
+//	LOG_DEBUG( TAG, "CP value: %u, V", AdcToVoltageCalc(adc_data_size, COEF_FP_CP) );
 	
 //	if(m_adc->adcDataReady)
 	m_adc->adcStartCapture();
 }
 // ---------------------------------------------------------------------------
-#define FILTR_DEPTH    4u
+void cEvEmulator::V_PpCalc(uint16_t *adc_data_arr, uint16_t data_size)
+{
+	uint16_t temp = AdcDataFiltr(adc_data_arr, data_size);
+
+	temp = AdcToVoltageCalc(temp, COEF_FP_PP);
+	
+	m_v_PP_value = temp;
+}
+// ---------------------------------------------------------------------------
+// uint16_t V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size);
+// ---------------------------------------------------------------------------
 uint16_t cEvEmulator::AdcDataFiltr(uint16_t *data, uint16_t data_size)
 {
 	int32_t data_accum = 0;
@@ -127,17 +147,12 @@ uint16_t cEvEmulator::AdcDataFiltr(uint16_t *data, uint16_t data_size)
 	return (uint16_t)(data_accum>>FILTR_DEPTH);
 }
 // ---------------------------------------------------------------------------
-#define ADC_RESOLUTION    0x0FDC
-#define MAX_INPUT_VOLTAGE (3.33f) * 1000
-#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
-#define COEF_FP (uint32_t)(COEF * 0xFFFF)
-
-uint16_t cEvEmulator::AdcToVoltageCalc(uint16_t adc_data)
+uint16_t cEvEmulator::AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp)
 {
 	uint16_t result = 0;
 	uint32_t temp = adc_data;
 
-	temp = COEF_FP * temp;
+	temp = coef_fp * temp; // COEF_FP_PP * temp;
 	temp = temp>>16;
 	result = temp;
 	
