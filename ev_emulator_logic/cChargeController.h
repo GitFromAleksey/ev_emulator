@@ -47,6 +47,8 @@ private:
 	
 	void V_PpCalc(uint16_t *adc_data_arr, uint16_t data_size);
 	void V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size);
+	uint16_t FindMaxMinMiddle(uint16_t *p_max, uint16_t *p_middle, uint16_t *p_min, 
+														uint16_t *adc_data_arr, uint16_t data_size);
 
 	uint16_t AdcDataFiltr(uint16_t *data, uint16_t data_size);
 	uint16_t AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp);

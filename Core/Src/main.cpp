@@ -500,7 +500,7 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
   /**/
-  LL_GPIO_SetOutputPin(V_S2_OUT_GPIO_Port, V_S2_OUT_Pin);
+  LL_GPIO_ResetOutputPin(V_S2_OUT_GPIO_Port, V_S2_OUT_Pin);
 
   /**/
   GPIO_InitStruct.Pin = LED_STATUS_Pin;

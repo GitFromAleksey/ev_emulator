@@ -9,8 +9,8 @@
 #define COEF_PP    (MAX_INPUT_VOLTAGE_PP/ADC_RESOLUTION_PP)
 #define COEF_FP_PP (uint32_t)(COEF_PP * 0xFFFF)
 
-#define ADC_RESOLUTION_CP    0x0CA8
-#define MAX_INPUT_VOLTAGE_CP (9.00f) * 1000
+#define ADC_RESOLUTION_CP    0x0F8C
+#define MAX_INPUT_VOLTAGE_CP (9.12f) * 1000
 #define COEF_CP    (MAX_INPUT_VOLTAGE_CP/ADC_RESOLUTION_CP)
 #define COEF_FP_CP (uint32_t)(COEF_CP * 0xFFFF)
 
@@ -79,6 +79,7 @@ void cEvEmulator::LedStatusDriver()
 	{
 		ticks = GetTicksMs();
 		m_led_status->SetState(led_state);
+//m_v_s2_out_switch->SetState(led_state);
 		led_state = !led_state;
 //		LOG_DEBUG(TAG, "led blink!");
 	}
@@ -108,12 +109,10 @@ void cEvEmulator::AdcCalculations()
 	
 	adc_data_size = m_adc->adcGetPpData(&p_adc_data_arr);
 	V_PpCalc(p_adc_data_arr, adc_data_size);
-	LOG_DEBUG(TAG, "PP value: %u, V", m_v_PP_value);
+//	LOG_DEBUG(TAG, "PP value: %u, V", m_v_PP_value);
 
-//	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
-//	adc_data_size = AdcDataFiltr(p_adc_data_arr, adc_data_size);
-//	LOG_DEBUG( TAG, "CP raw value: 0x%X", adc_data_size );
-//	LOG_DEBUG( TAG, "CP value: %u, V", AdcToVoltageCalc(adc_data_size, COEF_FP_CP) );
+	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
+	V_CpCalc(p_adc_data_arr, adc_data_size);
 	
 //	if(m_adc->adcDataReady)
 	m_adc->adcStartCapture();
@@ -128,7 +127,60 @@ void cEvEmulator::V_PpCalc(uint16_t *adc_data_arr, uint16_t data_size)
 	m_v_PP_value = temp;
 }
 // ---------------------------------------------------------------------------
-// uint16_t V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size);
+void cEvEmulator::V_CpCalc(uint16_t *adc_data_arr, uint16_t data_size)
+{
+	uint16_t temp = 0;
+	uint16_t max = 0;
+	uint16_t min = 0;
+	uint16_t middle = 0;
+	
+	temp = FindMaxMinMiddle(&max, &middle, &min, adc_data_arr, data_size);
+	LOG_DEBUG(TAG, "max = 0x%X; %u, V", max, AdcToVoltageCalc(max, COEF_FP_CP));
+	LOG_DEBUG(TAG, "middle = 0x%X; %u, V", middle, AdcToVoltageCalc(middle, COEF_FP_CP));
+	LOG_DEBUG(TAG, "min = 0x%X; %u, V", min, AdcToVoltageCalc(min, COEF_FP_CP));
+//	LOG_DEBUG(TAG, "CP MAX raw: 0x%X", temp);
+	temp = AdcToVoltageCalc(temp, COEF_FP_CP);
+//	LOG_DEBUG(TAG, "CP MAX Value: %u, V", temp);
+	
+	m_v_CP_ampl_value = temp;
+}
+// ---------------------------------------------------------------------------
+uint16_t cEvEmulator::FindMaxMinMiddle(uint16_t *p_max, uint16_t *p_middle, uint16_t *p_min, 
+																	uint16_t *adc_data_arr, uint16_t data_size)
+{
+	uint16_t result = 0;
+	uint16_t max = 0;
+	int32_t max_accum = 0;
+	uint16_t min = 0;
+	int32_t min_accum = 0;
+//	uint16_t middle = 0;
+	
+	for(uint16_t i = 0; i < data_size; ++i)
+	{
+		if(max < adc_data_arr[i])
+		{
+			max_accum -= max_accum>>2;
+			max_accum += adc_data_arr[i];
+			max = max_accum>>2;
+		}
+		if(min > adc_data_arr[i])
+		{
+			min_accum -= min_accum>>2;
+			min_accum += adc_data_arr[i];
+			min = min_accum>>2;			
+		}
+	}
+	
+	*p_max    = max;
+	*p_middle = (max - min)>>1;
+	*p_min    = min;
+	
+//	LOG_DEBUG(TAG, "max = 0x%X; %u, V", max, AdcToVoltageCalc(max, COEF_FP_CP));
+//	LOG_DEBUG(TAG, "middle = 0x%X; %u, V", middle, AdcToVoltageCalc(middle, COEF_FP_CP));
+//	LOG_DEBUG(TAG, "min = 0x%X; %u, V", min, AdcToVoltageCalc(min, COEF_FP_CP));
+	
+	return result;
+}
 // ---------------------------------------------------------------------------
 uint16_t cEvEmulator::AdcDataFiltr(uint16_t *data, uint16_t data_size)
 {
