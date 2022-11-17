@@ -12,6 +12,15 @@
 namespace evse_logic
 {
 
+typedef enum
+{
+	EV_STATE_NOT_CONNECT,
+	EV_STATE_CONNECT,
+	EV_STATE_PWM,
+	EV_STATE_S2_ON,
+	EV_STATE_NONE
+} t_ev_state;
+	
 class cEvEmulator : public iChargeController, public iThread
 {
 public:
@@ -29,6 +38,7 @@ public:
 	void ConnectADC(cADC *adc);
 
 private:
+	t_ev_state m_EV_STATE;
 	uint16_t m_v_PP_value;      // значение сигнала PP, вольт
 	uint16_t m_v_CP_ampl_value; // амплитуда сигнала CP, вольт
 	uint8_t m_v_CP_duty_cycle; // скважность сигнала CP, вольт
@@ -54,6 +64,9 @@ private:
 
 	uint16_t AdcDataFiltr(uint16_t *data, uint16_t data_size);
 	uint16_t AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp);
+	
+	void AvStateManager();
+	bool AvIsConnect();
 };
 
 } /* namespace ChargeController */

@@ -5,7 +5,7 @@
 
 
 #define ADC_RESOLUTION_PP    0x0FDC
-#define MAX_INPUT_VOLTAGE_PP (3.33f) * 1000
+#define MAX_INPUT_VOLTAGE_PP (3.4f) * 1000
 #define COEF_PP    (MAX_INPUT_VOLTAGE_PP/ADC_RESOLUTION_PP)
 #define COEF_FP_PP (uint32_t)(COEF_PP * 0xFFFF)
 
@@ -18,6 +18,7 @@ namespace evse_logic {
 
 // ---------------------------------------------------------------------------
 cEvEmulator::cEvEmulator(const char * name) :
+	m_EV_STATE(EV_STATE_NONE),
 	m_v_PP_value(0),
 	m_v_CP_ampl_value(0),
 	m_v_CP_duty_cycle(0),
@@ -38,6 +39,7 @@ void cEvEmulator::AddView(iView &view)
 // ---------------------------------------------------------------------------
 void cEvEmulator::run(void *params)
 {
+	AvStateManager();
 	LedStatusDriver();
 	AdcCalculations();
 }
@@ -117,7 +119,6 @@ void cEvEmulator::AdcCalculations()
 	
 //	LOG_DEBUG(TAG, "CP duty_cycle = %u,%%", m_v_CP_duty_cycle); // скважность
 //	LOG_DEBUG(TAG, "CP_ampl_value = %u, V", m_v_CP_ampl_value); // амплитуда сигнала CP, вольт
-	
 	LOG_DEBUG(TAG, "PP: %u,V; CP: %u,V; CP duty: %u,%%", 
 									m_v_PP_value, m_v_CP_ampl_value, m_v_CP_duty_cycle);
 
@@ -251,6 +252,63 @@ uint16_t cEvEmulator::AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp)
 	temp = temp>>16;
 	result = temp;
 	
+	return result;
+}
+// ---------------------------------------------------------------------------
+void cEvEmulator::AvStateManager()
+{
+
+	
+	switch(m_EV_STATE)
+	{
+		case EV_STATE_NOT_CONNECT:
+			m_v_s2_out_switch->SwitchOff();
+			m_EV_STATE = (AvIsConnect())?(EV_STATE_CONNECT):(EV_STATE_NOT_CONNECT);
+			break;
+		case EV_STATE_CONNECT:
+//			m_v_s2_out_switch->SwitchOff();
+			m_EV_STATE = (AvIsConnect())?(EV_STATE_CONNECT):(EV_STATE_NOT_CONNECT);
+			if(m_v_CP_duty_cycle > 5)
+				m_EV_STATE = EV_STATE_PWM;
+			break;
+		case EV_STATE_PWM:
+			if(!AvIsConnect()) 
+				m_EV_STATE = (EV_STATE_NOT_CONNECT);
+			
+			m_v_s2_out_switch->SwitchOn();
+			m_EV_STATE = EV_STATE_S2_ON;
+			break;
+		case EV_STATE_S2_ON:
+			if(!AvIsConnect()) 
+				m_EV_STATE = (EV_STATE_NOT_CONNECT);
+			break;
+		case EV_STATE_NONE:
+			m_EV_STATE = (AvIsConnect())?(EV_STATE_CONNECT):(EV_STATE_NOT_CONNECT);
+			break;
+		default:
+			break;
+	}
+}
+// ---------------------------------------------------------------------------
+bool cEvEmulator::AvIsConnect()
+{
+	uint16_t delta = 200;
+	bool result = false;
+	
+	if( m_v_PP_value < (3156 + delta) )
+	{
+		if( m_v_PP_value > (3156 - delta) )
+		{
+			result = false;
+		}
+		if( m_v_PP_value < (1365 + delta) )
+		{
+			if( m_v_PP_value > (1365 - delta) )
+			{
+				result = true;
+			}
+		}
+	}
 	return result;
 }
 // ---------------------------------------------------------------------------

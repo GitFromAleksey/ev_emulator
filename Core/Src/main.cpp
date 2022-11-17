@@ -97,9 +97,9 @@ void UartSendMessage(uint8_t *msg, uint16_t len)
 void DO_Switch(t_do *dout, bool set)
 {
 	if(set) 
-		LL_GPIO_ResetOutputPin(dout->GPIOx, dout->PortValue);
-	else
 		LL_GPIO_SetOutputPin(dout->GPIOx, dout->PortValue);
+	else
+		LL_GPIO_ResetOutputPin(dout->GPIOx, dout->PortValue);
 }
 void DO_Toggle(t_do *dout)
 {
