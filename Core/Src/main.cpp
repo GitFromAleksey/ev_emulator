@@ -172,50 +172,6 @@ volatile uint16_t ArrayCpData[ADC_ARR_DATA_SIZE];
 volatile uint16_t adc_dma_data[ADC_CHNLS_SUM];
 volatile bool adc_run_flag = false;
 
-//#define FILTR_DEPTH    4u
-
-//// ---------------------------------------------------------------------------
-//uint16_t AdcFiltr(uint16_t data)
-//{
-//	static uint32_t accum = 0;
-//	
-//	accum -= accum>>FILTR_DEPTH;
-//	accum += data;
-//	
-//	return (uint16_t)(accum>>FILTR_DEPTH);
-//}
-// ---------------------------------------------------------------------------
-//#define ADC_RESOLUTION    4095
-//#define MAX_INPUT_VOLTAGE (3.3f) * 1000
-//#define COEF    (MAX_INPUT_VOLTAGE/ADC_RESOLUTION)
-//#define COEF_FP (uint32_t)(COEF * 0xFFFF)
-
-//uint16_t AdcToVoltageCalc(uint16_t adc_data)
-//{
-//	uint16_t result = 0;
-//	uint32_t temp = adc_data;
-
-//	temp = COEF_FP * temp;
-//	temp = temp>>16;
-//	result = temp;
-//	
-//	return result;
-//}
-// ---------------------------------------------------------------------------
-//#define ADC_CAPTURE_DELAY_MS    200
-//void AdcDataCaptureManager(void)
-//{
-//	static uint32_t time = 0;
-//	
-//	if( (HAL_GetTick() - time) > ADC_CAPTURE_DELAY_MS )
-//	{
-//		ArrayDataCounter = 0;
-//		adc_run_flag = true;
-//		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_data, ADC_CHNLS_SUM);
-//		time = HAL_GetTick();
-//	}
-//}
-
 // ---------------------------------------------------------------------------
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {

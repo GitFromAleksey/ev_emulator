@@ -63,9 +63,9 @@ void cEvEmulator::ConnectADC(cADC *adc)
 // ---------------------------------------------------------------------------
 void cEvEmulator::LedStatusDriver()
 {
-	static uint32_t ticks = 0;
-	static bool led_state = false;
-	
+//	static uint32_t ticks = 0;
+//	static bool led_state = false;
+//	
 	if(m_led_status == NULL)
 	{
 		LOG_ERROR(TAG, "m_led_status == NULL");
@@ -77,14 +77,50 @@ void cEvEmulator::LedStatusDriver()
 		LOG_ERROR(TAG, "GetTicksMs == NULL");
 		return;
 	}
+//	
+//	if( (GetTicksMs() - ticks) >= LED_DELAY_MS )
+//	{
+//		ticks = GetTicksMs();
+//		m_led_status->SetState(led_state);
+//		led_state = !led_state;
+//	}
 	
-	if( (GetTicksMs() - ticks) >= LED_DELAY_MS )
+	#define DEFAULT_DELAY    1000u
+	static uint32_t prev_time_ms = 0;
+	uint16_t period = DEFAULT_DELAY;
+	uint16_t delay = DEFAULT_DELAY>>1;
+	uint32_t time_delta = GetTicksMs() - prev_time_ms;
+	
+	switch(m_EV_STATE)
 	{
-		ticks = GetTicksMs();
-		m_led_status->SetState(led_state);
-//m_v_s2_out_switch->SetState(led_state);
-		led_state = !led_state;
-//		LOG_DEBUG(TAG, "led blink!");
+		case EV_STATE_NOT_CONNECT:
+			delay = 10;
+			break;
+		case EV_STATE_CONNECT:
+			delay = period;
+			break;
+		case EV_STATE_PWM:
+			
+			break;
+		case EV_STATE_S2_ON:
+			delay = DEFAULT_DELAY>>1;
+			break;
+		case EV_STATE_NONE:
+
+			break;
+		default:
+			break;
+	}
+	
+	if( time_delta > period)
+	{
+		prev_time_ms = GetTicksMs();
+		m_led_status->SwitchOff(); // SetState(true); // LedStatusSwitch(true);
+
+	}
+	else if( time_delta > delay)
+	{
+		m_led_status->SwitchOn(); // SetState(false); // LedStatusSwitch(false);
 	}
 }
 // ---------------------------------------------------------------------------
