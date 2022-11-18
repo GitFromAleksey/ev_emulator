@@ -19,9 +19,12 @@ class cDebugInterface : public iView, public iThread
 		virtual void run(void *params);
 		virtual void SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)());
 	
+		void SetSendMessageCallback(void (*sendMessageCallback)(uint8_t *msg, uint16_t len));
+	
 	private:
 		
-		void (*SendMessage)(uint8_t *msg, uint16_t len);
+		void (*SendMessageCallback)(uint8_t *msg, uint16_t len);
+	
 };
 
 } /* namespace evse_logic */

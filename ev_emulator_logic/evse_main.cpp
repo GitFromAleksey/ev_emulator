@@ -53,6 +53,7 @@ void EvseInit(evse_init_t *evse_init)
 	adc->SetGetCpDataCallback(evse_init->adcGetCpData);
 	adc->SetGetPpDataCallback(evse_init->adcGetPpData);
 
+	debug->SetSendMessageCallback(evse_init->uartSendMessage);
 
 	ev->AddView(*local_control);
 	ev->AddView(*ocpp);
