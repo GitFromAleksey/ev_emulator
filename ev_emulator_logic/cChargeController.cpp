@@ -296,7 +296,7 @@ uint16_t cEvEmulator::AdcToVoltageCalc(uint16_t adc_data, uint32_t coef_fp)
 // ---------------------------------------------------------------------------
 void cEvEmulator::AvStateManager()
 {
-
+	static t_ev_state ev_state = m_EV_STATE;
 	
 	switch(m_EV_STATE)
 	{
@@ -305,7 +305,7 @@ void cEvEmulator::AvStateManager()
 			m_EV_STATE = (AvIsConnect())?(EV_STATE_CONNECT):(EV_STATE_NOT_CONNECT);
 			break;
 		case EV_STATE_CONNECT:
-//			m_v_s2_out_switch->SwitchOff();
+			m_v_s2_out_switch->SwitchOff();
 			m_EV_STATE = (AvIsConnect())?(EV_STATE_CONNECT):(EV_STATE_NOT_CONNECT);
 			if(m_v_CP_duty_cycle > 5)
 				m_EV_STATE = EV_STATE_PWM;
@@ -320,12 +320,20 @@ void cEvEmulator::AvStateManager()
 		case EV_STATE_S2_ON:
 			if(!AvIsConnect()) 
 				m_EV_STATE = (EV_STATE_NOT_CONNECT);
+			if(m_v_CP_duty_cycle == 0)
+				m_EV_STATE = (EV_STATE_NONE);
 			break;
 		case EV_STATE_NONE:
 			m_EV_STATE = (AvIsConnect())?(EV_STATE_CONNECT):(EV_STATE_NOT_CONNECT);
 			break;
 		default:
 			break;
+	}
+	
+	if(ev_state != m_EV_STATE)
+	{
+		ev_state = m_EV_STATE;
+		ViewsUpdate();
 	}
 }
 // ---------------------------------------------------------------------------
@@ -362,10 +370,32 @@ void cEvEmulator::ViewsUpdate()
 	
 	t_view_update_data data;
 
-	data.ev_state = "STATE";
+	switch(m_EV_STATE)
+	{
+		case EV_STATE_NOT_CONNECT:
+			data.ev_state = "NOT_CONNECT"; // "EV_STATE_NOT_CONNECT";
+			break;
+		case EV_STATE_CONNECT:
+			data.ev_state = "EV_STATE_CONNECT";
+			break;
+		case EV_STATE_PWM:
+			data.ev_state = "EV_STATE_PWM";
+			break;
+		case EV_STATE_S2_ON:
+			data.ev_state = "EV_STATE_S2_ON";
+			break;
+		case EV_STATE_NONE:
+			data.ev_state = "EV_STATE_NONE";
+			break;
+		default:
+			break;
+	}
+	
 	data.v_PP_value = m_v_PP_value;
 	data.v_CP_ampl_value = m_v_CP_ampl_value;
 	data.v_CP_duty_cycle = m_v_CP_duty_cycle;
+	
+	data.time_ms = GetTicksMs();
 	
 	for(auto it = m_views.begin(); it != m_views.end(); ++it)
 	{

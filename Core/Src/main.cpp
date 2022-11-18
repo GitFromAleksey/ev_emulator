@@ -42,13 +42,13 @@ typedef struct
 	uint32_t PortValue;	
 } t_do;
 
-typedef enum
-{
-	EV_READY,
-	EV_ERROR,
-	EV_WARNING,
-	EV_NONE
-} t_ev_status;
+//typedef enum
+//{
+//	EV_READY,
+//	EV_ERROR,
+//	EV_WARNING,
+//	EV_NONE
+//} t_ev_status;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -68,7 +68,7 @@ DMA_HandleTypeDef hdma_adc1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-t_ev_status EV_STATUS = EV_NONE;
+//t_ev_status EV_STATUS = EV_NONE;
 
 t_do DoLedStatus;
 t_do DoV_S2_Out;
@@ -86,7 +86,7 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-const char * uart_str = "EV Emulator start\n";
+//const char * uart_str = "EV Emulator start\n";
 void UartSendMessage(uint8_t *msg, uint16_t len)
 {
 	HAL_UART_Transmit(&huart3, msg, len,100);
@@ -271,8 +271,8 @@ int main(void)
 	DoV_S2_Out.GPIOx = V_S2_OUT_GPIO_Port;
 	DoV_S2_Out.PortValue = V_S2_OUT_Pin;
 	
-	UartSendMessage((uint8_t*)uart_str, 18);
-	EV_STATUS = EV_NONE;
+	//UartSendMessage((uint8_t*)uart_str, 18);
+//	EV_STATUS = EV_NONE;
 	
 	DeviceInit();
 	

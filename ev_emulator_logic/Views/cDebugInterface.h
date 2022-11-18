@@ -22,7 +22,8 @@ class cDebugInterface : public iView, public iThread
 		void SetSendMessageCallback(void (*sendMessageCallback)(uint8_t *msg, uint16_t len));
 	
 	private:
-		
+		static const uint16_t SEND_BUF_SIZE = 30;
+		uint8_t m_send_buf[SEND_BUF_SIZE];
 		void (*SendMessageCallback)(uint8_t *msg, uint16_t len);
 	
 };

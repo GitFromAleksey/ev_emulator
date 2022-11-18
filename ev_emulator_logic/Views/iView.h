@@ -8,6 +8,7 @@ namespace evse_logic
 
 typedef struct
 {
+	uint32_t time_ms;
 	char * ev_state;
 	uint16_t v_PP_value;      // значение сигнала PP, вольт
 	uint16_t v_CP_ampl_value; // амплитуда сигнала CP, вольт
