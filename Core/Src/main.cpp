@@ -41,14 +41,6 @@ typedef struct
 	GPIO_TypeDef *GPIOx;
 	uint32_t PortValue;	
 } t_do;
-
-//typedef enum
-//{
-//	EV_READY,
-//	EV_ERROR,
-//	EV_WARNING,
-//	EV_NONE
-//} t_ev_status;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -68,8 +60,6 @@ DMA_HandleTypeDef hdma_adc1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-//t_ev_status EV_STATUS = EV_NONE;
-
 t_do DoLedStatus;
 t_do DoV_S2_Out;
 /* USER CODE END PV */
@@ -86,13 +76,10 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//const char * uart_str = "EV Emulator start\n";
 void UartSendMessage(uint8_t *msg, uint16_t len)
 {
 	HAL_UART_Transmit(&huart3, msg, len,100);
 }
-
-
 // ---------------------------------------------------------------------------
 void DO_Switch(t_do *dout, bool set)
 {
@@ -121,41 +108,6 @@ void VS2OutSwitch(bool set)
 {
 	DO_Switch(&DoV_S2_Out, set);
 }
-//void LedStatusHandler(void)
-//{
-//	#define DEFAULT_DELAY    1000u
-//	static uint32_t prev_time_ms = 0;
-//	uint16_t period = DEFAULT_DELAY;
-//	uint16_t delay = DEFAULT_DELAY>>1;
-//	uint32_t time_delta = HAL_GetTick() - prev_time_ms;
-//	
-//	switch((int)EV_STATUS)
-//	{
-//		case EV_READY:
-//			break;
-//		case EV_ERROR:
-//			break;
-//		case EV_WARNING:
-//			break;
-//		case EV_NONE:
-////			delay = 500;
-//			break;
-//		default:
-//			break;
-//	}
-//	
-//	if( time_delta > period)
-//	{
-//		prev_time_ms = HAL_GetTick();
-//		LedStatusSwitch(true);
-
-//	}
-//	else if( time_delta > delay)
-//	{
-//		LedStatusSwitch(false);
-//	}
-
-//}
 // ---------------------------------------------------------------------------
 #define ADC_CHNLS_SUM                2u // количество сканируемых каналов АЦП
 #define ADC_CP_FREQ                  1000.0 // частота входного сигнала CP
@@ -271,17 +223,12 @@ int main(void)
 	DoV_S2_Out.GPIOx = V_S2_OUT_GPIO_Port;
 	DoV_S2_Out.PortValue = V_S2_OUT_Pin;
 	
-	//UartSendMessage((uint8_t*)uart_str, 18);
-//	EV_STATUS = EV_NONE;
-	
 	DeviceInit();
 	
 	LOG_DEBUG((char*)TAG,"START");
 	
   while (1)
   {
-//		LedStatusHandler();
-//		AdcDataCaptureManager();
 		EvseRun(NULL);
     /* USER CODE END WHILE */
 

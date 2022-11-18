@@ -66,9 +66,7 @@ void cEvEmulator::ConnectADC(cADC *adc)
 // ---------------------------------------------------------------------------
 void cEvEmulator::LedStatusDriver()
 {
-//	static uint32_t ticks = 0;
-//	static bool led_state = false;
-//	
+
 	if(m_led_status == NULL)
 	{
 		LOG_ERROR(TAG, "m_led_status == NULL");
@@ -80,13 +78,6 @@ void cEvEmulator::LedStatusDriver()
 		LOG_ERROR(TAG, "GetTicksMs == NULL");
 		return;
 	}
-//	
-//	if( (GetTicksMs() - ticks) >= LED_DELAY_MS )
-//	{
-//		ticks = GetTicksMs();
-//		m_led_status->SetState(led_state);
-//		led_state = !led_state;
-//	}
 	
 	#define DEFAULT_DELAY    1000u
 	static uint32_t prev_time_ms = 0;
@@ -151,13 +142,10 @@ void cEvEmulator::AdcCalculations()
 	
 	adc_data_size = m_adc->adcGetPpData(&p_adc_data_arr);
 	V_PpCalc(p_adc_data_arr, adc_data_size);
-//	LOG_DEBUG(TAG, "PP value: %u, V", m_v_PP_value);
 
 	adc_data_size = m_adc->adcGetCpData(&p_adc_data_arr);
 	V_CpCalc(p_adc_data_arr, adc_data_size);
 	
-//	LOG_DEBUG(TAG, "CP duty_cycle = %u,%%", m_v_CP_duty_cycle); // скважность
-//	LOG_DEBUG(TAG, "CP_ampl_value = %u, V", m_v_CP_ampl_value); // амплитуда сигнала CP, вольт
 	LOG_DEBUG(TAG, "PP: %u,V; CP: %u,V; CP duty: %u,%%", 
 									m_v_PP_value, m_v_CP_ampl_value, m_v_CP_duty_cycle);
 
@@ -193,7 +181,6 @@ uint16_t cEvEmulator::FindMaxMinMiddle(uint16_t *p_max, uint16_t *p_middle, uint
 	int32_t max_accum = 0;
 	uint16_t min = 0;
 	int32_t min_accum = 0;
-//	uint16_t middle = 0;
 	
 	for(uint16_t i = 0; i < data_size; ++i)
 	{
