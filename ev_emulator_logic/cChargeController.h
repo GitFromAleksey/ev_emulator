@@ -1,6 +1,9 @@
 #ifndef CCHARGECONTROLLER_H_
 #define CCHARGECONTROLLER_H_
 
+#include <list>
+#include "iView.h"
+
 #include "iChargeController.h"
 #include "iThread.h"
 //#include "Drivers/cDIO.h"
@@ -8,6 +11,8 @@
 #include "Drivers/cDO.h"
 #include "Drivers/cAI.h"
 #include "Drivers/cPWM.h"
+
+
 
 namespace evse_logic
 {
@@ -49,6 +54,8 @@ private:
 
 	evse_ticks_ms_t (*GetTicksMs)();
 
+	std::list<iView *> m_views;
+
 	const uint8_t  FILTR_DEPTH  = 4;    // глубина фильтра
 	const uint32_t LED_DELAY_MS = 500;  // период мигания светодиодом
 	const uint32_t ADC_DELAY_MS = 1000; // период опроса АЦП
@@ -67,6 +74,8 @@ private:
 	
 	void AvStateManager();
 	bool AvIsConnect();
+	
+	void ViewsUpdate();
 };
 
 } /* namespace ChargeController */

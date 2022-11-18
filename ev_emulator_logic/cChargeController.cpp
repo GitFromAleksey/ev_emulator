@@ -35,6 +35,7 @@ cEvEmulator::~cEvEmulator() {}
 void cEvEmulator::AddView(iView &view)
 {
 	LOG_DEBUG(TAG, "Add view.");
+	m_views.push_back(&view);
 }
 // ---------------------------------------------------------------------------
 void cEvEmulator::run(void *params)
@@ -42,6 +43,8 @@ void cEvEmulator::run(void *params)
 	AvStateManager();
 	LedStatusDriver();
 	AdcCalculations();
+	
+	ViewsUpdate();
 }
 // ---------------------------------------------------------------------------
 void cEvEmulator::SetGetTicksMsFunc(evse_ticks_ms_t (*getTicksMs)())
@@ -346,6 +349,28 @@ bool cEvEmulator::AvIsConnect()
 		}
 	}
 	return result;
+}
+// ---------------------------------------------------------------------------
+void cEvEmulator::ViewsUpdate()
+{
+	static uint32_t prev_time_ms = 0;
+	uint32_t time_delta = GetTicksMs() - prev_time_ms;
+
+	if(time_delta < 1000)
+		return;
+	prev_time_ms = GetTicksMs();
+	
+	t_view_update_data data;
+
+	data.ev_state = "STATE";
+	data.v_PP_value = m_v_PP_value;
+	data.v_CP_ampl_value = m_v_CP_ampl_value;
+	data.v_CP_duty_cycle = m_v_CP_duty_cycle;
+	
+	for(auto it = m_views.begin(); it != m_views.end(); ++it)
+	{
+		dynamic_cast<iView*>(*it)->Update(data);
+	}
 }
 // ---------------------------------------------------------------------------
 

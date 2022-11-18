@@ -15,7 +15,11 @@ cDebugInterface::~cDebugInterface () {}
 // ---------------------------------------------------------------------------
 void cDebugInterface::Update(t_view_update_data &data)
 {
-
+	const char * msg = "Hello from debug interface!\n";
+	if(SendMessageCallback != NULL)
+	{
+		SendMessageCallback((uint8_t*)msg, 28);
+	}
 }
 // ---------------------------------------------------------------------------
 void cDebugInterface::run(void *params)

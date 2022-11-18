@@ -8,7 +8,10 @@ namespace evse_logic
 
 typedef struct
 {
-
+	char * ev_state;
+	uint16_t v_PP_value;      // значение сигнала PP, вольт
+	uint16_t v_CP_ampl_value; // амплитуда сигнала CP, вольт
+	uint8_t v_CP_duty_cycle; // скважность сигнала CP, вольт
 } t_view_update_data;
 
 class iView
