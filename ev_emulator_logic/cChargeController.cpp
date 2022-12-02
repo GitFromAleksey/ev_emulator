@@ -79,7 +79,7 @@ void cEvEmulator::LedStatusDriver()
 		return;
 	}
 	
-	#define DEFAULT_DELAY    1000u
+	#define DEFAULT_DELAY    500u
 	static uint32_t prev_time_ms = 0;
 	uint16_t period = DEFAULT_DELAY;
 	uint16_t delay = DEFAULT_DELAY>>1;
