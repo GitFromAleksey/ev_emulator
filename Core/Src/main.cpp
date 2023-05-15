@@ -23,7 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-#include "EventRecorder.h"
+//#include "EventRecorder.h"
 #include "EvseLogger.h"
 #include "evse_main.h"
 /* USER CODE END Includes */
@@ -201,7 +201,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-	EventRecorderInitialize(EventRecordAll, 1);
+//	EventRecorderInitialize(EventRecordAll, 1);
 	LOG_ENABLE(true);
 	LOG_ADD_TIME_STAMP_GETTER(HAL_GetTick);
   /* USER CODE END SysInit */
